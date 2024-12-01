@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 import { Tabs } from "expo-router";
 
-const SocialRepLayout = () => {
+const RepetitiveBehaviorLayout = () => {
   return (
     <>
       <Tabs>
@@ -14,6 +14,6 @@ const SocialRepLayout = () => {
   );
 };
 
-export default SocialRepLayout;
+export default RepetitiveBehaviorLayout;
 
 const styles = StyleSheet.create({});
