@@ -7,7 +7,7 @@ const SocialRepLayout = () => {
     <>
       <Tabs>
         <Tabs.Screen name="index" options={{ title: "Home", headerShown: false }} />
-              
+        <Tabs.Screen name="Scorecard" options={{ title: "Progress", headerShown: false }} />
         {/* <Tabs.Screen name="game" options={{ title: "Game", headerShown: false }} /> */}
       </Tabs>
     </>
