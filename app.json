@@ -32,6 +32,10 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-av"
+        
       ]
     ],
     "experiments": {

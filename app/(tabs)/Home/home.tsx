@@ -24,7 +24,7 @@ export default function Home() {
       icon: 'message-circle' as 'message-circle',
       color: '#45B7D1',
       description: 'Get help when you need it',
-      href: '/(tabs)/RepetitiveBehavior'
+      href: '/(tabs)/VirtualAssistant'
     },
     {
       title: 'Special Interests & Activities',
