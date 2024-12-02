@@ -7,7 +7,7 @@ export default function SocialReciprocity() {
   const router = useRouter();
 
   const handleStartLearning = () => {
-    router.push('/(tabs)/SocialReciprocity/PreTest');
+    router.push('/(tabs)/SocialReciprocity/preTest');
   };
 
   return (

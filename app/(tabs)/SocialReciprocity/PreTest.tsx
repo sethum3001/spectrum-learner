@@ -46,7 +46,7 @@ const questions = [
     },
 ];
 
-export default function PreTestScreen() {
+export default function preTest() {
     const router = useRouter();
     const [sound, setSound] = useState<Audio.Sound | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -54,6 +54,7 @@ export default function PreTestScreen() {
         new Array(questions.length).fill(null)
     );
     const [showResult, setShowResult] = useState(false);
+    const [feedbackMessage, setFeedbackMessage] = useState('');
 
     const playSound = async () => {
         if (sound) {
@@ -104,6 +105,14 @@ export default function PreTestScreen() {
     const handleContinue = () => {
         if (selectedAnswers.every((answer) => answer !== null)) {
             setShowResult(true);
+            const score = calculateScore();
+            if (score === questions.length) {
+                setFeedbackMessage('Great job! Increasing difficulty.');
+            } else if (score <= 1) {
+                setFeedbackMessage('Keep trying! Decreasing difficulty.');
+            } else {
+                setFeedbackMessage('Good effort! Keep practicing.');
+            }
         }
     };
 
@@ -172,9 +181,10 @@ export default function PreTestScreen() {
                         <Text style={styles.resultText}>
                             Great job! You got {calculateScore()} out of {questions.length} correct!
                         </Text>
+                        <Text style={styles.feedbackText}>{feedbackMessage}</Text>
                         <TouchableOpacity
                             style={styles.nextButton}
-                            onPress={() => router.push('/(tabs)/Home')}
+                            onPress={() => router.push('/(tabs)/SocialReciprocity/caretakerInput')}
                         >
                             <Text style={styles.nextButtonText}>Start Learning</Text>
                         </TouchableOpacity>
@@ -280,6 +290,12 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         color: '#4CAF50',
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    feedbackText: {
+        fontSize: 18,
+        color: '#333333',
         marginBottom: 20,
         textAlign: 'center',
     },
