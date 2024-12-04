@@ -63,7 +63,7 @@ export default function StudentProgressScreen() {
 
   return (
     <LinearGradient
-      colors={['#FFF9C4', '#FFECB3', '#FFE0B2']}
+      colors={['#F0F8FF', '#E6E6FA']}
       style={styles.container}
     >
       <View style={styles.content}>

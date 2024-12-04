@@ -123,7 +123,7 @@ export default function preTest() {
     };
 
     return (
-        <LinearGradient colors={['#FFF9C4', '#FFECB3']} style={styles.container}>
+        <LinearGradient colors={['#F0F8FF', '#E6E6FA']} style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <View style={styles.storyContainer}>
                     <Text style={styles.storyTitle}>Beep's Big Day</Text>
