@@ -24,7 +24,7 @@ export default function Index() {
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
       <Text style={styles.title}>
-        Welcome Spectrum Learn
+        Welcome to Spectrum Learn
       </Text>
       {!showButtons && (
         <Image
@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 40,
     color: '#333',
+    textAlign: 'center', // Center align the title
   },
   buttonContainer: {
     width: '100%',

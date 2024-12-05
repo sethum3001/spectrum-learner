@@ -5,17 +5,7 @@ import { Link } from 'expo-router';
 export default function SocialReportaryIndex() {
   return (
     <View style={styles.container}>
-      {/* <Text style={styles.title}>Social Reportary</Text>
-      <Link href="/(tabs)/SocialReciportary" asChild>
-        <Pressable style={styles.button}>
-          <Text style={styles.buttonText}>Go to Home</Text>
-        </Pressable>
-      </Link>
-      <Link href="/(tabs)/SocialReciportary" asChild>
-        <Pressable style={styles.button}>
-          <Text style={styles.buttonText}>Go to Profile</Text>
-        </Pressable>
-      </Link> */}
+      <Text>help</Text>
     </View>
   );
 }

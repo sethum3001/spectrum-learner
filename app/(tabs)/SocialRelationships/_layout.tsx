@@ -6,7 +6,6 @@ const SocialRepLayout = () => {
   return (
     <Tabs
       screenOptions={{
-        
         headerShown: false, // Hide the header
       }}
     >

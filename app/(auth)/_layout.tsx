@@ -6,24 +6,26 @@ const AuthLayout = () => {
   return (
     <View style={styles.container}>
       <Stack>
-        <Stack.Screen 
-          name="index" 
+        <Stack.Screen
+          name="index"
           options={{
             title: 'Welcome',
-            headerShown: false,
-          }} 
+            headerShown: false, // Hide header for the index screen
+          }}
         />
-        <Stack.Screen 
-          name="log-in" 
+        <Stack.Screen
+          name="log-in"
           options={{
             title: 'Login',
-          }} 
+            headerShown: false, // Show header for the login screen
+          }}
         />
-        <Stack.Screen 
-          name="register" 
+        <Stack.Screen
+          name="register"
           options={{
             title: 'Register',
-          }} 
+            headerShown: false, // Show header for the register screen
+          }}
         />
       </Stack>
     </View>
@@ -37,4 +39,3 @@ const styles = StyleSheet.create({
 });
 
 export default AuthLayout;
-
