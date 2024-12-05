@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import LearningCard from '@/components/Common/LearningCard';
 
-export default function home() {
+export default function Home() {
   const learningPaths = [
     {
       title: 'Social Reciprocity',
@@ -31,7 +31,7 @@ export default function home() {
       icon: 'star' as 'star',
       color: '#96CEB4',
       description: 'Explore your favorite things',
-      href: '/(tabs)/RepetitiveBehavior'
+      href: '/(tabs)/SocialRelationships'
     },
   ];
 

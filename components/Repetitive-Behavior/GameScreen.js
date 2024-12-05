@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Button, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, runOnJS } from 'react-native-reanimated';
+import { Feather } from '@expo/vector-icons';
 
 const { height, width } = Dimensions.get('window');
 
@@ -73,7 +74,7 @@ const DraggableSentence = ({ sentence, index, onDragEnd, isInTopSection, onRemov
         <Text style={styles.sentenceText}>{sentence}</Text>
         {isInTopSection && (
           <TouchableOpacity style={styles.removeButton} onPress={() => onRemove(index)}>
-            <Text style={styles.removeButtonText}>X</Text>
+            <Feather name="x" color="#fff" size={16} />
           </TouchableOpacity>
         )}
       </Animated.View>
@@ -147,6 +148,18 @@ const StoryScreen = () => {
     }
   };
 
+  const stopAttempt = () => {
+    setIsCallStarted(false);
+    setCurrentStage(0);
+    setTopSentences([]);
+    setBottomSentences([]);
+  };
+
+  const restartAttempt = () => {
+    setCurrentStage(0);
+    resetStage(0);
+  };
+
   if (!isCallStarted) {
     return (
       <View style={styles.container}>
@@ -174,6 +187,17 @@ const StoryScreen = () => {
             />
           ))}
         </ScrollView>
+        <View style={styles.floatingButtonsContainer}>
+          <TouchableOpacity style={styles.floatingButton} onPress={checkAnswer}>
+            <Feather name="check" color="#fff" size={24} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.floatingButton} onPress={restartAttempt}>
+            <Feather name="rotate-ccw" color="#fff" size={24} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.floatingButton} onPress={stopAttempt}>
+            <Feather name="x" color="#fff" size={24} />
+          </TouchableOpacity>
+        </View>
       </View>
       <View style={styles.bottomSection}>
         <ScrollView ref={bottomScrollViewRef} showsVerticalScrollIndicator={true}>
@@ -190,9 +214,6 @@ const StoryScreen = () => {
           ))}
         </ScrollView>
       </View>
-      <View style={styles.buttonContainer}>
-        <Button title="Check Answer" onPress={checkAnswer} />
-      </View>
     </GestureHandlerRootView>
   );
 };
@@ -201,24 +222,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5FCFF',
+    padding: 20,
   },
   stageIndicator: {
     padding: 10,
     backgroundColor: '#e6f7ff',
     alignItems: 'center',
+    borderRadius: 10,
+    marginBottom: 10,
   },
   stageText: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#333',
   },
   topSection: {
-    height: '55%',
+    height: '60%',
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
     padding: 10,
   },
   bottomSection: {
-    height: '35%',
+    height: '40%',
     padding: 10,
   },
   sentence: {
@@ -240,10 +265,11 @@ const styles = StyleSheet.create({
   },
   sentenceText: {
     fontSize: 16,
+    color: '#333',
     flex: 1,
   },
   removeButton: {
-    backgroundColor: 'red',
+    backgroundColor: '#FF6B6B',
     width: 24,
     height: 24,
     borderRadius: 12,
@@ -256,14 +282,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-  buttonContainer: {
+  floatingButtonsContainer: {
     position: 'absolute',
-    bottom: 20,
-    left: 0,
-    right: 0,
+    top: 10,
+    right: 10,
+    flexDirection: 'row',
+  },
+  floatingButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#4ECDC4',
+    justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 3,
   },
 });
 
 export default StoryScreen;
-

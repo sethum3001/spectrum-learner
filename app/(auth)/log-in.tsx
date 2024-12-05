@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 const Login = () => {
@@ -15,19 +16,25 @@ const Login = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+      <View style={styles.inputContainer}>
+        <Feather name="users" size={24} color="#FF6B6B" style={styles.icon} />
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          value={username}
+          onChangeText={setUsername}
+        />
+      </View>
+      <View style={styles.inputContainer}>
+        <Feather name="lock" size={24} color="#4ECDC4" style={styles.icon} />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+      </View>
       <Pressable style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </Pressable>
@@ -40,20 +47,32 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
+    backgroundColor: '#F0F4F8',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
+    color: '#333',
   },
-  input: {
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ddd',
     padding: 10,
-    fontSize: 16,
     borderRadius: 6,
     marginBottom: 10,
+    backgroundColor: '#fff',
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  icon: {
+    marginRight: 10,
   },
   button: {
     backgroundColor: '#2563eb',
@@ -70,4 +89,3 @@ const styles = StyleSheet.create({
 });
 
 export default Login;
-
