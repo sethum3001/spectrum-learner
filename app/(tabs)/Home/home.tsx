@@ -31,7 +31,7 @@ export default function Home() {
       icon: 'star' as 'star',
       color: '#96CEB4',
       description: 'Explore your favorite things',
-      href: '/(tabs)/RepetitiveBehavior'
+      href: '/(tabs)/SocialRelationships'
     },
   ];
 
