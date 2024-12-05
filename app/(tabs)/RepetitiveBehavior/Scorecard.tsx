@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import StoryScreen from '../../../components/Social-Receiportary/GameScreen'
-import SocialReportaryIndex from '../../../components/Social-Receiportary/Scorecard'
+import SocialReportaryIndex from '../../../components/Repetitive-Behavior/Scorecard'
 
 const GameScreen = () => {
   return (

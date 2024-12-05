@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import LearningCard  from '../../../components/Common/LearningCard'
+import LearningCard from '@/components/Common/LearningCard';
 
 export default function Home() {
   const learningPaths = [
@@ -10,7 +10,7 @@ export default function Home() {
       icon: 'users' as 'users',
       color: '#FF6B6B',
       description: 'Learn how to interact with others',
-      href: '/(tabs)/RepetitiveBehavior'
+      href: '/(tabs)/SocialReciprocity'
     },
     {
       title: 'Restricted or Repetitive Behavior and Savantism',
