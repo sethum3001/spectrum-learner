@@ -12,10 +12,10 @@ const profile = () => {
   };
 
   const activities = {
-    distance: '120.6 km',
-    elevation: '6.1m',
-    calories: '492',
-    time: '5:30',
+    levels: '3',
+    point: '600',
+    rank: 'ndf',
+    time_spent: '5:30',
   };
 
   const notifications = [
@@ -29,10 +29,10 @@ const profile = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <LinearGradient colors={['#4CAF50', '#FFFFFF']} style={styles.gradient}>
+      <LinearGradient colors={['#ABC8A2', '#FFFFFF']} style={styles.gradient}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.header}>
-            <Pressable onPress={() => console.log('Navigate back')}>
+            <Pressable onPress={() => console.log('Navigate back')} >
               <Feather name="arrow-left" size={24} color="#FFFFFF" />
             </Pressable>
             <Text style={styles.headerTitle}>Profile</Text>
@@ -50,29 +50,29 @@ const profile = () => {
             <View style={styles.statsContainer}>
               <View style={styles.statItem}>
                 <Feather name="map-pin" size={24} color="#4CAF50" />
-                <Text style={styles.statValue}>{activities.distance}</Text>
-                <Text style={styles.statLabel}>Distance</Text>
+                <Text style={styles.statValue}>{activities.levels}</Text>
+                <Text style={styles.statLabel}>levels</Text>
               </View>
               <View style={styles.statItem}>
                 <Feather name="trending-up" size={24} color="#4CAF50" />
-                <Text style={styles.statValue}>{activities.elevation}</Text>
-                <Text style={styles.statLabel}>Elevation</Text>
+                <Text style={styles.statValue}>{activities.point}</Text>
+                <Text style={styles.statLabel}>Points</Text>
               </View>
               <View style={styles.statItem}>
                 <Feather name="zap" size={24} color="#4CAF50" />
-                <Text style={styles.statValue}>{activities.calories}</Text>
-                <Text style={styles.statLabel}>Calories</Text>
+                <Text style={styles.statValue}>{activities.rank}</Text>
+                <Text style={styles.statLabel}>Rank</Text>
               </View>
               <View style={styles.statItem}>
                 <Feather name="clock" size={24} color="#4CAF50" />
-                <Text style={styles.statValue}>{activities.time}</Text>
-                <Text style={styles.statLabel}>Time</Text>
+                <Text style={styles.statValue}>{activities.time_spent}</Text>
+                <Text style={styles.statLabel}>Time Spent</Text>
               </View>
             </View>
           </View>
 
           <View style={styles.routeSection}>
-            <Text style={styles.sectionTitle}>Route</Text>
+            <Text style={styles.sectionTitle}>Levels Gained/Lost</Text>
             <Text style={styles.routeText}>You used in last 7 days</Text>
             <Image
               source={require('../../../assets/images/avatar.png')} 
