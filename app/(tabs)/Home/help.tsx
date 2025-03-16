@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Link } from 'expo-router';
 
-export default function SocialReportaryIndex() {
+export default function Help() {
   return (
     <View style={styles.container}>
       <Text>help</Text>
