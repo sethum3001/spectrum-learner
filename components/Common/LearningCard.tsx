@@ -8,10 +8,11 @@ interface LearningCardProps {
     icon: 'users' | 'heart' | 'message-circle' | 'star';
     color: string;
     href: string;
+    description: string;
     onPress: () => void;
 }
 
-const LearningCard: React.FC<LearningCardProps> = ({ title, icon, color, href, onPress }) => {
+const LearningCard: React.FC<LearningCardProps> = ({ title, icon, color, href, description, onPress }) => {
     const scaleAnim = new Animated.Value(1);
 
     const handlePressIn = () => {
@@ -49,6 +50,10 @@ const LearningCard: React.FC<LearningCardProps> = ({ title, icon, color, href, o
                         <Feather name={icon} size={40} color="#FFFFFF" />
                     </View>
                     <Text style={styles.cardTitle}>{title}</Text>
+                    <Text style={styles.cardDescription}>{description}</Text>
+                    <View style={styles.arrowContainer}>
+                        <Feather name="chevron-right" size={24} color="#FFFFFF" />
+                    </View>
                 </Animated.View>
             </TouchableOpacity>
         </Link>
@@ -69,6 +74,7 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
+        position: 'relative',
     },
     iconContainer: {
         width: 80,
@@ -78,12 +84,25 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 15,
+        alignSelf: 'center',
     },
     cardTitle: {
         fontSize: 24,
         fontWeight: 'bold',
         color: '#FFFFFF',
+        textAlign: 'center',
         marginBottom: 8,
+    },
+    cardDescription: {
+        fontSize: 16,
+        color: '#FFFFFF',
+        textAlign: 'center',
+        marginBottom: 20,
+    },
+    arrowContainer: {
+        position: 'absolute',
+        bottom: 10,
+        right: 10,
     },
 });
 

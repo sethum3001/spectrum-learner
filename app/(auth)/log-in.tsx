@@ -1,43 +1,82 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { View, Text, TextInput, Pressable, StyleSheet, Image } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
+const theme = {
+  primary: '#ABC8A2',
+  background: '#FFFFFF',
+  text: '#1A2417',
+  secondaryText: '#666666',
+};
+
 const Login = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleLogin = () => {
-    // Here you would typically validate the login credentials
-    // For now, we'll just navigate to the home page
-    router.push('/(tabs)/Home/home'); 
+    router.push('/(tabs)/Home/home');
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <View style={styles.inputContainer}>
-        <Feather name="users" size={24} color="#FF6B6B" style={styles.icon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Username"
-          value={username}
-          onChangeText={setUsername}
+      <View style={styles.topSection}>
+        <Image
+          source={require('../../assets/images/girl-with-book.png')}
+          style={styles.illustration}
         />
       </View>
-      <View style={styles.inputContainer}>
-        <Feather name="lock" size={24} color="#4ECDC4" style={styles.icon} />
+      <View style={styles.bottomSection}>
+        <Text style={styles.title}>LOGIN TO YOUR ACCOUNT</Text>
+        <View style={styles.socialButtonsContainer}>
+          <Pressable style={[styles.socialButton, { backgroundColor: '#3b5998' }]}>
+            <FontAwesome name="facebook" size={24} color="#FFFFFF" />
+          </Pressable>
+          <Pressable style={[styles.socialButton, { backgroundColor: '#1da1f2' }]}>
+            <FontAwesome name="twitter" size={24} color="#FFFFFF" />
+          </Pressable>
+          <Pressable style={[styles.socialButton, { backgroundColor: '#db4437' }]}>
+            <FontAwesome name="google" size={24} color="#FFFFFF" />
+          </Pressable>
+        </View>
+        <Text style={styles.dividerText}>or use your email</Text>
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder="EMAIL"
+          placeholderTextColor={theme.secondaryText}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="PASSWORD"
+          placeholderTextColor={theme.secondaryText}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
+        <View style={styles.optionsContainer}>
+          <Pressable style={styles.checkboxContainer} onPress={() => setRememberMe(!rememberMe)}>
+            <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]} />
+            <Text style={styles.checkboxLabel}>REMEMBER ME</Text>
+          </Pressable>
+          <Text style={styles.linkText} onPress={() => router.push('/log-in')}>
+            FORGOT PASSWORD?
+          </Text>
+        </View>
+        <Pressable style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>LOGIN</Text>
+        </Pressable>
+        <Text style={styles.footerText}>
+          DON'T HAVE AN ACCOUNT?{' '}
+          <Text style={styles.linkText} onPress={() => router.push('/register')}>
+            REGISTER HERE
+          </Text>
+        </Text>
       </View>
-      <Pressable style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
-      </Pressable>
     </View>
   );
 };
@@ -45,46 +84,103 @@ const Login = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: theme.primary,
+  },
+  topSection: {
+    height: '35%',
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  illustration: {
+    marginTop: 30,
+    width: '80%',
+    height: '80%',
+    resizeMode: 'contain',
+  },
+  bottomSection: {
+    flex: 1,
+    backgroundColor: theme.background,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     padding: 20,
-    backgroundColor: '#F0F4F8',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    color: theme.text,
     textAlign: 'center',
-    color: '#333',
+    marginBottom: 20,
   },
-  inputContainer: {
+  socialButtonsContainer: {
     flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  socialButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 10,
-    borderRadius: 6,
-    marginBottom: 10,
-    backgroundColor: '#fff',
+    marginHorizontal: 10,
+  },
+  dividerText: {
+    textAlign: 'center',
+    color: theme.secondaryText,
+    marginBottom: 20,
   },
   input: {
-    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
     fontSize: 16,
-    marginLeft: 10,
+    backgroundColor: '#fff',
   },
-  icon: {
+  optionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 1,
+    borderColor: theme.primary,
     marginRight: 10,
   },
+  checkboxChecked: {
+    backgroundColor: theme.primary,
+  },
+  checkboxLabel: {
+    color: theme.secondaryText,
+  },
   button: {
-    backgroundColor: '#2563eb',
-    padding: 12,
-    borderRadius: 6,
+    backgroundColor: theme.text,
+    padding: 16,
+    borderRadius: 30,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 20,
   },
   buttonText: {
-    color: 'white',
-    fontSize: 16,
+    color: '#fff',
+    fontSize: 18,
     fontWeight: '600',
+  },
+  footerText: {
+    textAlign: 'center',
+    color: theme.secondaryText,
+    marginTop: 20,
+  },
+  linkText: {
+    color: theme.primary,
+    textDecorationLine: 'underline',
   },
 });
 

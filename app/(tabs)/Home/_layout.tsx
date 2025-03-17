@@ -1,19 +1,42 @@
-import { StyleSheet, Text, View } from "react-native";
-import React from "react";
+import { Feather } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
 const TabsLayout = () => {
   return (
-    <>
-      <Tabs>
-        <Tabs.Screen name="home" options={{ title: "Home", headerShown: false, }} />
-        <Tabs.Screen name="profile" options={{ title: "Profile", headerShown: false, }} />
-        <Tabs.Screen name="index" options={{ title: "Help", headerShown: false, }} />
-      </Tabs>
-    </>
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="user" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="help"
+        options={{
+          title: "Help",
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="help-circle" size={size} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
   );
 };
 
 export default TabsLayout;
-
-const styles = StyleSheet.create({});
