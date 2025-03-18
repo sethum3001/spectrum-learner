@@ -121,13 +121,11 @@ const SocialQuiz = () => {
               <TouchableOpacity 
                 key={index} 
                 onPress={() => handleAnswer(option.emotion)} 
-                style={[
-                  styles.optionButton, 
-                  answers[currentQuestion] === option.emotion && (
-                    option.emotion === questions[currentQuestion].correctAnswer 
-                      ? styles.correctAnswerSelected 
-                      : styles.incorrectAnswerSelected
-                  )
+                style={[styles.optionButton,
+                  answers[currentQuestion] === option.emotion && {
+                    backgroundColor: option.emotion === questions[currentQuestion].correctAnswer 
+                      ? '#28a745' : '#dc3545'
+                  }
                 ]}
               >
                 <Image source={{ uri: option.image }} style={styles.optionImage} />
@@ -143,14 +141,13 @@ const SocialQuiz = () => {
       ) : (
         <View style={styles.result}>
           <Text style={styles.title}>Quiz Completed!</Text>
-          <Text style={[
-            styles.score, 
-            { color: score >= 6 ? '#28a745' : score >= 4 ? '#ffc107' : '#dc3545' }
-          ]}>
-            Your score: {score} out of {questions.length}
-          </Text>
+          <View style={[styles.resultBox, 
+            score >= 6 ? styles.highScore : score >= 4 ? styles.mediumScore : styles.lowScore]}>
+            <Text style={styles.score}>Your score: {score} out of {questions.length}</Text>
+          </View>
           {questions.map((question, index) => (
-            <View key={index} style={styles.questionResult}>
+            <View key={index} style={[styles.questionResult, 
+              answers[index] === question.correctAnswer ? styles.correctBox : styles.incorrectBox]}>
               <Text style={styles.questionText}>{question.question}</Text>
               <Text style={answers[index] === question.correctAnswer ? styles.correct : styles.incorrect}>
                 Your answer: {answers[index] || 'Not answered'}
@@ -199,7 +196,10 @@ const styles = StyleSheet.create({
     padding: 10,
     margin: 5,
     alignItems: 'center',
-    width: '45%',
+    justifyContent: 'center',
+    width: '45%', // Ensures consistent width
+    aspectRatio: 1, // Makes height proportional to width
+    maxHeight: 150, // Prevents excessive height differences
   },
   correctAnswerSelected: {
     backgroundColor: '#28a745',
@@ -208,14 +208,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#dc3545',
   },
   optionImage: {
-    width: '100%',
-    height: 100,
-    borderRadius: 5,
-    marginBottom: 10,
+    width: '80%', // Ensures images scale consistently
+    height: 80, // Keeps image sizes uniform
+    resizeMode: 'contain',
+    marginBottom: 5,
   },
   optionText: {
     fontSize: 16,
     color: '#333',
+    textAlign: 'center',
+    flexShrink: 1, // Prevents text from expanding too much
   },
   progress: {
     marginTop: 20,
