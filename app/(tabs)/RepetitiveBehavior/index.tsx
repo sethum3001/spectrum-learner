@@ -1,14 +1,14 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import StoryScreen from '../../../components/Social-Receiportary/GameScreen'
+import PromptSelector from '../../../components/Repetitive-Behavior/PromptSelector'
 
-const GameScreen = () => {
+const PromptScreen = () => {
   return (
     
       
-      <StoryScreen />
+      <PromptSelector />
     
   );
 };
 
-export default GameScreen;
+export default PromptScreen;

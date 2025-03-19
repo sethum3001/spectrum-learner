@@ -1,7 +1,7 @@
- {
+{
   "expo": {
-    "name": "spectrum-learner",
-    "slug": "spectrum-learner",
+    "name": "Spectrum Learn",
+    "slug": "spectrum-learn",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,13 +9,15 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rashi01.spectrumlearn"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.rashi01.spectrumlearn"
     },
     "web": {
       "bundler": "metro",
@@ -47,6 +49,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "570ca362-d886-4076-92ac-a3c7b1f60136"
+      }
     }
   }
 }
