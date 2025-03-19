@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const questions = [
   {
@@ -89,6 +91,7 @@ const SocialQuiz = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState(new Array(questions.length).fill(null));
   const [showResult, setShowResult] = useState(false);
+  
 
   const handleAnswer = (selectedAnswer) => {
     const newAnswers = [...answers];
@@ -101,6 +104,25 @@ const SocialQuiz = () => {
       setShowResult(true);
     }
   };
+  
+
+const handleQuizCompletion = async () => {
+  const newAttempt = {
+    date: new Date().toLocaleString(),
+    score: score,
+    total: questions.length,
+  };
+  
+
+  const storedAttempts = await AsyncStorage.getItem('quizAttempts');
+  const attemptsArray = storedAttempts ? JSON.parse(storedAttempts) : [];
+  
+  attemptsArray.push(newAttempt);
+  await AsyncStorage.setItem('quizAttempts', JSON.stringify(attemptsArray));
+
+  setShowResult(true);
+};
+
 
   const restartQuiz = () => {
     setCurrentQuestion(0);
@@ -134,7 +156,7 @@ const SocialQuiz = () => {
             ))}
           </View>
           <Text style={styles.progress}>Question {currentQuestion + 1} of {questions.length}</Text>
-          <TouchableOpacity onPress={() => setShowResult(true)} style={styles.completeButton}>
+         <TouchableOpacity onPress={() => setShowResult(true)} style={styles.completeButton}>
             <Text style={styles.completeButtonText}>Complete Quiz</Text>
           </TouchableOpacity>
         </>

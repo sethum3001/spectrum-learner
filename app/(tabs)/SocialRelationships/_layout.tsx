@@ -28,7 +28,16 @@ const SocialRepLayout = () => {
           ),
         }}
       />
-     
+      <Tabs.Screen
+        name="evaluation"
+        options={{
+          title: "Evaluate",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="stats-chart-outline" size={size} color={color} />
+          ),
+        }}
+      />
+    
       
       {/* Add other screens here */}
     </Tabs>
