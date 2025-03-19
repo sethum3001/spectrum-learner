@@ -1,77 +1,73 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Animated } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import LearningCard from '@/components/Common/LearningCard';
 
 export default function Home() {
-  const learningPaths = [
+  const learningPaths: {
+    title: string;
+    icon: 'users' | 'refresh-cw' | 'message-circle' | 'star';
+    color: string;
+    description: string;
+    href: string;
+  }[] = [
     {
       title: 'Social Reciprocity',
-      icon: 'users' as 'users',
-      color: '#FF3B3B',
+      icon: 'users',
+      color: '#E6D7FF', // Pastel purple
       description: 'Learn how to make friends and share!',
       href: '/(tabs)/SocialReciprocity',
     },
     {
-      title: 'Restricted or Repetitive Behavior and Savantism',
-      icon: 'heart' as 'heart',
-      color: '#2ECC71',
+      title: 'Restricted or Repetitive Behavior',
+      icon: 'refresh-cw',
+      color: '#D7EFFF', // Pastel blue
       description: 'Discover your special talents!',
       href: '/(tabs)/RepetitiveBehavior',
     },
     {
       title: 'Virtual Assistant',
-      icon: 'message-circle' as 'message-circle',
-      color: '#3498DB',
+      icon: 'message-circle',
+      color: '#FFF3D7', // Pastel yellow
       description: 'Get help from your friendly assistant!',
       href: '/(tabs)/VirtualAssistant',
     },
     {
-      title: 'Special Interests & Activities',
-      icon: 'star' as 'star',
-      color: '#F1C40F',
+      title: 'Special Interests',
+      icon: 'star',
+      color: '#FFD7E6', // Pastel pink
       description: 'Explore your favorite things!',
       href: '/(tabs)/SocialRelationships',
     },
   ];
 
-  const fadeAnim = new Animated.Value(0);
-  React.useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 1000,  
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <LinearGradient colors={['#ABC8A2', '#FFFFFF']} style={styles.container}>
-        <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-            <Feather name="smile" size={40} color="#333333" style={{ marginRight: 10 }} />
-            <Text style={styles.welcomeText}>Hi There!</Text>
+    <SafeAreaView style={styles.container}>
+      <LinearGradient colors={['#ABC8A2', '#FFFFFF']} style={styles.gradient}>
+        <View style={styles.header}>
+          <Text style={styles.greetingText}>Hello, Little Learner!</Text>
+          <View style={styles.profileIconContainer}>
+            <Feather name="user" size={30} color="white" />
           </View>
-          <Text style={styles.subtitle}>Pick a fun activity to start learning!</Text>
-          <View style={styles.banner}>
-            <Text style={styles.bannerText}>Let’s Learn!</Text>
-          </View>
-        </Animated.View>
+        </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {learningPaths.map((path, index) => (
-            <LearningCard
-              key={index}
-              title={path.title}
-              icon={path.icon}
-              color={path.color}
-              description={path.description}
-              href={path.href}
-              onPress={() => console.log(`Selected: ${path.title}`)}
-            />
-          ))}
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <Text style={styles.sectionTitle}>Pick a Fun Learning Path!</Text>
+          <View style={styles.grid}>
+            {learningPaths.map((path, index) => (
+              <View style={styles.cardContainer} key={index}>
+                <LearningCard
+                  title={path.title}
+                  icon={path.icon}
+                  color={path.color}
+                  href={path.href}
+                  description={path.description}
+                  onPress={() => console.log(`Selected: ${path.title}`)}
+                />
+              </View>
+            ))}
+          </View>
         </ScrollView>
       </LinearGradient>
     </SafeAreaView>
@@ -82,36 +78,44 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  gradient: {
+    flex: 1,
+  },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 20,
     paddingTop: 40,
-    alignItems: 'center', 
   },
-  welcomeText: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  subtitle: {
+  greetingText: {
+    color: '#2E2E5D', // Dark purple for contrast
     fontSize: 24,
-    color: '#666666',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  banner: {
-    backgroundColor: '#ABC8A2', 
-    padding: 10,
-    borderRadius: 10,
-    marginTop: 10,
-  },
-  bannerText: {
-    fontSize: 18,
     fontWeight: 'bold',
-    color: '#333333',
-    textAlign: 'center',
+  },
+  profileIconContainer: {
+    backgroundColor: '#2E2E5D',
+    borderRadius: 20,
+    padding: 5,
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 40,
+  },
+  sectionTitle: {
+    color: '#2E2E5D',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  cardContainer: {
+    width: '48%',
+    marginBottom: 20,
   },
 });

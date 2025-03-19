@@ -5,7 +5,7 @@ import { Link } from 'expo-router';
 
 interface LearningCardProps {
     title: string;
-    icon: 'users' | 'heart' | 'message-circle' | 'star';
+    icon: 'users' | 'refresh-cw' | 'message-circle' | 'star'; 
     color: string;
     href: string;
     description: string;
@@ -47,12 +47,12 @@ const LearningCard: React.FC<LearningCardProps> = ({ title, icon, color, href, d
                     ]}
                 >
                     <View style={styles.iconContainer}>
-                        <Feather name={icon} size={40} color="#FFFFFF" />
+                        <Feather name={icon} size={30} color="#FFFFFF" />
                     </View>
                     <Text style={styles.cardTitle}>{title}</Text>
                     <Text style={styles.cardDescription}>{description}</Text>
                     <View style={styles.arrowContainer}>
-                        <Feather name="chevron-right" size={24} color="#FFFFFF" />
+                        <Feather name="chevron-right" size={20} color="#FFFFFF" />
                     </View>
                 </Animated.View>
             </TouchableOpacity>
@@ -63,9 +63,8 @@ const LearningCard: React.FC<LearningCardProps> = ({ title, icon, color, href, d
 const styles = StyleSheet.create({
     card: {
         width: '100%',
-        padding: 20,
-        borderRadius: 20,
-        marginBottom: 20,
+        padding: 15,
+        borderRadius: 15,
         elevation: 4,
         shadowColor: '#000',
         shadowOffset: {
@@ -75,29 +74,30 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         position: 'relative',
+        height: 210,
     },
     iconContainer: {
-        width: 80,
-        height: 80,
+        width: 60,
+        height: 60,
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        borderRadius: 40,
+        borderRadius: 30,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 15,
+        marginBottom: 10,
         alignSelf: 'center',
     },
     cardTitle: {
-        fontSize: 24,
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#FFFFFF',
         textAlign: 'center',
-        marginBottom: 8,
+        marginBottom: 5,
     },
     cardDescription: {
-        fontSize: 16,
+        fontSize: 14,
         color: '#FFFFFF',
         textAlign: 'center',
-        marginBottom: 20,
+        marginBottom: 10,
     },
     arrowContainer: {
         position: 'absolute',
