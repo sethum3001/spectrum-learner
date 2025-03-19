@@ -4,8 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
-  Dimensions,
   Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -57,13 +55,17 @@ export default function StudentProgressScreen() {
     ],
   };
 
-  const handleContinue = () => {
-    router.push('/(tabs)/Home/home');
+  const handleContinueLearning = () => {
+    router.push('/(tabs)/SocialReciprocity/loading');
+  };
+
+  const handleGoToProfile = () => {
+    router.push('/(tabs)/Home/profile');
   };
 
   return (
     <LinearGradient
-      colors={['#F0F8FF', '#E6E6FA']}
+      colors={['#ABC8A2', '#FFFFFF']}
       style={styles.container}
     >
       <View style={styles.content}>
@@ -71,15 +73,15 @@ export default function StudentProgressScreen() {
           source={require('../../../assets/images/student-avatar.png')}
           style={[styles.avatar, bouncingStyle]}
         />
-        <Text style={styles.welcomeText}>Great job, Superstar!</Text>
+        <Text style={styles.welcomeText}>Amazing Work, Superstar!</Text>
         <View style={styles.levelContainer}>
           <Text style={styles.levelText}>Current Level:</Text>
           <Text style={styles.levelNumber}>3</Text>
         </View>
         <Text style={styles.encouragementText}>
-          You're making amazing progress on your learning adventure!
+          You're doing an awesome job on your learning journey!
         </Text>
-        
+
         <View style={styles.learningPathContainer}>
           <Text style={styles.learningPathTitle}>Your Learning Journey:</Text>
           <LearningPathItem
@@ -99,13 +101,23 @@ export default function StudentProgressScreen() {
           />
         </View>
 
-        <TouchableOpacity
-          style={styles.continueButton}
-          onPress={handleContinue}
-        >
-          <Text style={styles.continueButtonText}>Continue Learning</Text>
-          <Ionicons name="arrow-forward" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.continueButton]}
+            onPress={handleContinueLearning}
+          >
+            <Text style={styles.actionButtonText}>Continue Learning</Text>
+            <Ionicons name="arrow-forward" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionButton, styles.profileButton]}
+            onPress={handleGoToProfile}
+          >
+            <Text style={styles.actionButtonText}>Go Back to Profile</Text>
+            <Ionicons name="person-circle-outline" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
       </View>
     </LinearGradient>
   );
@@ -128,11 +140,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   welcomeText: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: 'bold',
-    color: '#FF5722',
+    color: '#FFFFFF',
     marginBottom: 10,
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 5,
   },
   levelContainer: {
     flexDirection: 'row',
@@ -142,29 +157,36 @@ const styles = StyleSheet.create({
   levelText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#4A4A4A',
+    color: '#FFFFFF',
     marginRight: 10,
   },
   levelNumber: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: '#1A2417',
   },
   encouragementText: {
     fontSize: 18,
-    color: '#666666',
+    color: '#1A2417',
     textAlign: 'center',
     marginBottom: 20,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   learningPathContainer: {
     width: '100%',
     marginBottom: 20,
   },
   learningPathTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#4A4A4A',
+    color: '#FFFFFF',
     marginBottom: 10,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   learningPathItem: {
     flexDirection: 'row',
@@ -179,20 +201,32 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginLeft: 10,
   },
-  continueButton: {
-    backgroundColor: '#FF5722',
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 20,
+  },
+  actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 15,
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     borderRadius: 25,
+    flex: 1,
+    marginHorizontal: 10,
   },
-  continueButtonText: {
-    fontSize: 18,
+  continueButton: {
+    backgroundColor: '#4CAF50',
+  },
+  profileButton: {
+    backgroundColor: '#FF5722',
+  },
+  actionButtonText: {
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginRight: 10,
   },
 });
-

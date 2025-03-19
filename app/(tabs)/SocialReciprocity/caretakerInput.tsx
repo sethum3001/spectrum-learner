@@ -13,12 +13,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 const emotions = [
-    { name: 'Happiness', icon: '😊', color: '#FFD700' },
-    { name: 'Concentration', icon: '🧐', color: '#4169E1' },
-    { name: 'Sadness', icon: '😢', color: '#1E90FF' },
-    { name: 'Excitement', icon: '😃', color: '#FF69B4' },
-    { name: 'Calmness', icon: '😌', color: '#90EE90' },
-    { name: 'Frustration', icon: '😣', color: '#FF6347' },
+    { name: 'Happiness', icon: '😊', color: '#FFD700', description: 'Rate how happy the child seemed during the activity (0 for not happy, 100 for very happy).' },
+    { name: 'Time Spent', icon: '⏳', color: '#4169E1', description: 'Estimate how much time the child spent engaged in the activity (0 for very little time, 100 for a lot of time).' },
+    { name: 'Sadness', icon: '😢', color: '#1E90FF', description: 'Rate how sad the child seemed during the activity (0 for not sad, 100 for very sad).' },
+    { name: 'Engagement', icon: '😃', color: '#FF69B4', description: 'Rate how engaged the child was during the activity (0 for not engaged, 100 for very engaged).' },
 ];
 
 export default function caretakerInputScreen() {
@@ -27,12 +25,6 @@ export default function caretakerInputScreen() {
     const [emotionValues, setEmotionValues] = useState<EmotionValues>(
         emotions.reduce((acc, emotion) => ({ ...acc, [emotion.name]: 50 }), {} as EmotionValues)
     );
-
-    interface Emotion {
-        name: string;
-        icon: string;
-        color: string;
-    }
 
     interface EmotionValues {
         [key: string]: number;
@@ -91,6 +83,7 @@ export default function caretakerInputScreen() {
                             thumbTintColor={emotion.color}
                         />
                         <Text style={styles.valueText}>{emotionValues[emotion.name]}</Text>
+                        <Text style={styles.emotionDescription}>{emotion.description}</Text>
                     </View>
                 ))}
 
@@ -106,6 +99,7 @@ export default function caretakerInputScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        marginTop: 50,
     },
     scrollContent: {
         padding: 20,
@@ -150,8 +144,6 @@ const styles = StyleSheet.create({
         marginBottom: 5,
     },
     emotionContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
         marginBottom: 20,
         backgroundColor: '#FFFFFF',
         borderRadius: 15,
@@ -161,18 +153,22 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#4A4A4A',
-        width: 150,
+        marginBottom: 10,
     },
     slider: {
-        flex: 1,
         marginHorizontal: 10,
     },
     valueText: {
         fontSize: 16,
         fontWeight: 'bold',
         color: '#4A4A4A',
-        width: 40,
         textAlign: 'right',
+        marginTop: 5,
+    },
+    emotionDescription: {
+        fontSize: 14,
+        color: '#666666',
+        marginTop: 5,
     },
     submitButton: {
         backgroundColor: '#4CAF50',
@@ -191,4 +187,3 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
 });
-
