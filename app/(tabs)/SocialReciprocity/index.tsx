@@ -26,7 +26,7 @@ export default function SocialReciprocity() {
   }, [bounceAnim]);
 
   const handleStartLearning = () => {
-    router.push('/(tabs)/SocialReciprocity/preTest');
+    router.push('/(tabs)/SocialReciprocity/loading'); // Navigate to the loading screen
   };
 
   return (
