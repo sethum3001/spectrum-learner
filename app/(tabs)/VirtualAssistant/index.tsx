@@ -1,191 +1,185 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, Button } from "react-native";
 import React, { useEffect, useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import { useNavigation } from "expo-router";
 import { Audio } from "expo-av";
 import axios from "axios";
 import * as FileSystem from "expo-file-system";
+import { useVoiceRecognition } from "@/hooks/useVoiceRecognition";
+import { Pressable } from "react-native";
+
+Audio.setAudioModeAsync({
+  allowsRecordingIOS: false,
+  staysActiveInBackground: false,
+  playsInSilentModeIOS: true,
+  shouldDuckAndroid: true,
+  playThroughEarpieceAndroid: false,
+});
 
 const VirtualAssistant = () => {
-  const navigation = useNavigation();
-
-  const [text, setText] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [recording, setRecording] = useState<Audio.Recording>();
-  const [AIResponse, setAIResponse] = useState(false);
-
-  useEffect(() => {
-    navigation.setOptions({ headerShown: false });
-  }, [navigation]);
-
-  //   const saveRecordingToPublicFolder = async (uri: string) => {
-  //     const destinationUri = `${FileSystem.documentDirectory}recording.wav`;
-
-  //     try {
-  //       await FileSystem.copyAsync({
-  //         from: uri,
-  //         to: destinationUri,
-  //       });
-
-  //       const fileInfo = await FileSystem.getInfoAsync(destinationUri);
-  //       console.log("File Info:", fileInfo);
-
-  //       if (fileInfo.exists) {
-  //         console.log("File successfully copied to:", destinationUri);
-  //       } else {
-  //         console.error("File copy failed.");
-  //       }
-
-  //       return destinationUri;
-  //     } catch (error) {
-  //       console.error("Error saving file:", error);
-  //       return null;
-  //     }
-  //   };
-
-  const getMicrophonePersmission = async () => {
-    try {
-      const { granted } = await Audio.requestPermissionsAsync();
-
-      if (!granted) {
-        alert("Permission to access microphone is required!");
-        return false;
+  const { state, startRecognizing, stopRecognizing, destroyRecognizer } =
+    useVoiceRecognition();
+    const [borderColor, setBorderColor] = useState<"lightgray" | "lightgreen">(
+      "lightgray"
+    );
+    const [urlPath, setUrlPath] = useState("");
+  
+    useEffect(() => {
+      listFiles();
+    }, []);
+  
+    const listFiles = async () => {
+      try {
+        const result = await FileSystem.readDirectoryAsync(
+          FileSystem.documentDirectory!
+        );
+        if (result.length > 0) {
+          const filename = result[0];
+          const path = FileSystem.documentDirectory + filename;
+          console.log("Full path to the file:", path);
+          setUrlPath(path);
+        }
+      } catch (error) {
+        console.error("An error occurred while listing the files:", error);
       }
-      return true;
-    } catch (error) {
-      console.log("Error occured while requesting permission: ", error);
-      return false;
-    }
-  };
-
-  const recordingOptions: any = {
-    android: {
-      extension: ".wav",
-      outPutFormat: Audio.AndroidOutputFormat.MPEG_4,
-      androidEncoder: Audio.AndroidAudioEncoder.AAC,
-      sampleRate: 44100,
-      numberOfChannels: 2,
-      bitRate: 128000,
-    },
-    ios: {
-      extension: ".wav",
-      audioQuality: Audio.IOSAudioQuality.HIGH,
-      sampleRate: 44100,
-      numberOfChannels: 2,
-      bitRate: 128000,
-      linearPCMBitDepth: 16,
-      linearPCMIsBigEndian: false,
-      linearPCMIsFloat: false,
-    },
-  };
-
-  const startRecording = async () => {
-    const hasPermission = await getMicrophonePersmission();
-    if (!hasPermission) {
-      return;
-    }
-    try {
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-
-      setIsRecording(true);
-      const { recording } = await Audio.Recording.createAsync(recordingOptions);
-      setRecording(recording);
-    } catch (error) {
-      console.log("Error occured while starting recording: ", error);
-    }
-  };
-
-  const stopRecording = async () => {
-    setIsRecording(false);
-    setLoading(true);
-    try {
-      await recording?.stopAndUnloadAsync();
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        
-      });
-
-      //   const uri = await saveRecordingToPublicFolder(
-      //     recording?.getURI() as string
-      //   );
-      const uri = recording?.getURI();
-      console.log("Recording URI:", uri);
-
-      const transcript = await sendAudioToWhisper(uri!);
-      setText(transcript);
-    } catch (error) {
-      console.log("Error occured while stopping recording: ", error);
-    }
-  };
-
-  const sendAudioToWhisper = async (uri: string) => {
-    try {
-      const formData: any = new FormData();
-      formData.append("audio", {
-        uri,
-        type: "audio/wav",
-        name: "recording.wav",
-      });
-      formData.append("model", "whisper-1");
-
-      const response = await axios.post(
-        "https://api.openai.com/v1/audio/transcriptions",
-        formData,
+    };
+  
+    // const handleSubmit = async () => {
+    //   if (!state.results[0]) return;
+    //   try {
+    //     // Fetch the audio blob from the server
+    //     const audioBlob = await fetchAudio(state.results[0]);
+  
+    //     const reader = new FileReader();
+    //     reader.onload = async (e) => {
+    //       if (e.target && typeof e.target.result === "string") {
+    //         // data:audio/mpeg;base64,....(actual base64 data)...
+    //         const audioData = e.target.result.split(",")[1];
+  
+    //         // Write the audio data to a local file
+    //         const path = await writeAudioToFile(audioData);
+  
+    //         await playFromPath(path);
+    //         destroyRecognizer();
+    //       }
+    //     };
+    //     reader.readAsDataURL(audioBlob);
+    //   } catch (e) {
+    //     console.error("An error occurred:", e);
+    //   }
+    // };
+  
+    // Function to fetch synthesized audio from the server
+    const fetchAudio = async (text: string) => {
+      const response = await fetch(
+        "http://localhost:3000/text-to-speech/synthesize",
         {
-          headers: {
-            Authorization: `Bearer ${process.env.EXPO_PUBLIC_OPENAI_API_KEY}`,
-            "Content-Type": "multipart/form-data",
-          },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
         }
       );
-      console.log("response", response);
-      return response.data.text;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log(
-          "Error occured while sending audio to whisper: ",
-          error.response?.data || error.message
-        );
-      } else {
-        console.log("Error occured while sending audio to whisper: ", error);
+      return await response.blob();
+    };
+  
+    // Function to write the audio data to a local file
+    const writeAudioToFile = async (audioData: string) => {
+      const path = FileSystem.documentDirectory + "temp.mp3";
+      await FileSystem.writeAsStringAsync(path, audioData, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      return path;
+    };
+  
+    async function playFromPath(path: string) {
+      try {
+        const soundObject = new Audio.Sound();
+        await soundObject.loadAsync({ uri: path });
+        await soundObject.playAsync();
+      } catch (error) {
+        console.log("An error occurred while playing the audio:", error);
       }
-      return "";
     }
-  };
+
+    
 
   return (
-    <View className="">
-      <>
-        {!isRecording ? (
-          <>
-            {AIResponse ? (
-              <View></View>
-            ) : (
-              <TouchableOpacity
-                style={{
-                  backgroundColor: "#fff",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                onPress={startRecording}
-              >
-                <FontAwesome name="microphone" size={150} color="#2b3356" />
-              </TouchableOpacity>
-            )}
-          </>
-        ) : (
-          <TouchableOpacity onPress={stopRecording}>
-            <FontAwesome name="microphone" size={100} color="#2b3356" />
-          </TouchableOpacity>
-        )}
-      </>
-    </View>
+    <View style={styles.container}>
+    <Text style={{ fontSize: 32, fontWeight: "bold", marginBottom: 30 }}>
+      Talk GPT 🤖
+    </Text>
+    <Text style={styles.instructions}>
+      Press and hold this button to record your voice. Release the button to
+      send the recording, and you'll hear a response
+    </Text>
+    <Text style={styles.welcome}>Your message: "{state.results[0]}"</Text>
+    <Pressable
+      onPressIn={() => {
+        setBorderColor("lightgreen");
+        startRecognizing();
+      }}
+      onPressOut={() => {
+        setBorderColor("lightgray");
+        stopRecognizing();
+        // handleSubmit();
+      }}
+      style={{
+        width: "90%",
+        padding: 30,
+        gap: 10,
+        borderWidth: 3,
+        alignItems: "center",
+        borderRadius: 10,
+        borderColor: borderColor,
+      }}
+    >
+      <Text style={styles.welcome}>
+        {state.isRecording ? "Release to Send" : "Hold to Speak"}
+      </Text>
+      <Image style={styles.button} source={require("../../../assets/button.png")} />
+    </Pressable>
+    {/* <Button
+      title="Replay last message"
+      onPress={async () => await playFromPath(urlPath)}
+    /> */}
+  </View>
   );
 };
+
+const styles = StyleSheet.create({
+  button: {
+    width: 50,
+    height: 50,
+  },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5FCFF",
+    padding: 20,
+  },
+  welcome: {
+    fontSize: 20,
+    textAlign: "center",
+    margin: 10,
+  },
+  action: {
+    textAlign: "center",
+    color: "#0000FF",
+    marginVertical: 5,
+    fontWeight: "bold",
+  },
+  instructions: {
+    textAlign: "center",
+    color: "#333333",
+    marginBottom: 5,
+    fontSize: 12,
+  },
+  stat: {
+    textAlign: "center",
+    color: "#B0171F",
+    marginBottom: 1,
+  },
+});
 
 export default VirtualAssistant;
