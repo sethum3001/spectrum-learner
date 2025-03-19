@@ -1,185 +1,156 @@
-import { View, Text, TouchableOpacity, StyleSheet, Image, Button } from "react-native";
-import React, { useEffect, useState } from "react";
-import { FontAwesome } from "@expo/vector-icons";
-import { useNavigation } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  SafeAreaView,
+  ScrollView,
+  View,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
 import { Audio } from "expo-av";
-import axios from "axios";
-import * as FileSystem from "expo-file-system";
-import { useVoiceRecognition } from "@/hooks/useVoiceRecognition";
-import { Pressable } from "react-native";
 
-Audio.setAudioModeAsync({
-  allowsRecordingIOS: false,
-  staysActiveInBackground: false,
-  playsInSilentModeIOS: true,
-  shouldDuckAndroid: true,
-  playThroughEarpieceAndroid: false,
-});
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 
-const VirtualAssistant = () => {
-  const { state, startRecognizing, stopRecognizing, destroyRecognizer } =
-    useVoiceRecognition();
-    const [borderColor, setBorderColor] = useState<"lightgray" | "lightgreen">(
-      "lightgray"
-    );
-    const [urlPath, setUrlPath] = useState("");
-  
-    useEffect(() => {
-      listFiles();
-    }, []);
-  
-    const listFiles = async () => {
-      try {
-        const result = await FileSystem.readDirectoryAsync(
-          FileSystem.documentDirectory!
-        );
-        if (result.length > 0) {
-          const filename = result[0];
-          const path = FileSystem.documentDirectory + filename;
-          console.log("Full path to the file:", path);
-          setUrlPath(path);
-        }
-      } catch (error) {
-        console.error("An error occurred while listing the files:", error);
-      }
-    };
-  
-    // const handleSubmit = async () => {
-    //   if (!state.results[0]) return;
-    //   try {
-    //     // Fetch the audio blob from the server
-    //     const audioBlob = await fetchAudio(state.results[0]);
-  
-    //     const reader = new FileReader();
-    //     reader.onload = async (e) => {
-    //       if (e.target && typeof e.target.result === "string") {
-    //         // data:audio/mpeg;base64,....(actual base64 data)...
-    //         const audioData = e.target.result.split(",")[1];
-  
-    //         // Write the audio data to a local file
-    //         const path = await writeAudioToFile(audioData);
-  
-    //         await playFromPath(path);
-    //         destroyRecognizer();
-    //       }
-    //     };
-    //     reader.readAsDataURL(audioBlob);
-    //   } catch (e) {
-    //     console.error("An error occurred:", e);
-    //   }
-    // };
-  
-    // Function to fetch synthesized audio from the server
-    const fetchAudio = async (text: string) => {
-      const response = await fetch(
-        "http://localhost:3000/text-to-speech/synthesize",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text }),
-        }
-      );
-      return await response.blob();
-    };
-  
-    // Function to write the audio data to a local file
-    const writeAudioToFile = async (audioData: string) => {
-      const path = FileSystem.documentDirectory + "temp.mp3";
-      await FileSystem.writeAsStringAsync(path, audioData, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      return path;
-    };
-  
-    async function playFromPath(path: string) {
-      try {
-        const soundObject = new Audio.Sound();
-        await soundObject.loadAsync({ uri: path });
-        await soundObject.playAsync();
-      } catch (error) {
-        console.log("An error occurred while playing the audio:", error);
+import useWebFocus from "@/hooks/useWebFocus";
+import { recordSpeech } from "./functions/recordSpeech";
+import { transcribeSpeech } from "./functions/transcribeSpeech";
+
+export default function HomeScreen() {
+  const [transcribedSpeech, setTranscribedSpeech] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const isWebFocused = useWebFocus();
+  const audioRecordingRef = useRef(new Audio.Recording());
+  const webAudioPermissionsRef = useRef<MediaStream | null>(null);
+
+  useEffect(() => {
+    if (isWebFocused) {
+      const getMicAccess = async () => {
+        const permissions = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        webAudioPermissionsRef.current = permissions;
+      };
+      if (!webAudioPermissionsRef.current) getMicAccess();
+    } else {
+      if (webAudioPermissionsRef.current) {
+        webAudioPermissionsRef.current
+          .getTracks()
+          .forEach((track) => track.stop());
+        webAudioPermissionsRef.current = null;
       }
     }
+  }, [isWebFocused]);
 
-    
+  const startRecording = async () => {
+    setIsRecording(true);
+    await recordSpeech(
+      audioRecordingRef,
+      setIsRecording,
+      !!webAudioPermissionsRef.current
+    );
+  };
+
+  const stopRecording = async () => {
+    setIsRecording(false);
+    setIsTranscribing(true);
+    try {
+      const speechTranscript = await transcribeSpeech(audioRecordingRef);
+      setTranscribedSpeech(speechTranscript || "");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
 
   return (
-    <View style={styles.container}>
-    <Text style={{ fontSize: 32, fontWeight: "bold", marginBottom: 30 }}>
-      Talk GPT 🤖
-    </Text>
-    <Text style={styles.instructions}>
-      Press and hold this button to record your voice. Release the button to
-      send the recording, and you'll hear a response
-    </Text>
-    <Text style={styles.welcome}>Your message: "{state.results[0]}"</Text>
-    <Pressable
-      onPressIn={() => {
-        setBorderColor("lightgreen");
-        startRecognizing();
-      }}
-      onPressOut={() => {
-        setBorderColor("lightgray");
-        stopRecognizing();
-        // handleSubmit();
-      }}
-      style={{
-        width: "90%",
-        padding: 30,
-        gap: 10,
-        borderWidth: 3,
-        alignItems: "center",
-        borderRadius: 10,
-        borderColor: borderColor,
-      }}
-    >
-      <Text style={styles.welcome}>
-        {state.isRecording ? "Release to Send" : "Hold to Speak"}
-      </Text>
-      <Image style={styles.button} source={require("../../../assets/button.png")} />
-    </Pressable>
-    {/* <Button
-      title="Replay last message"
-      onPress={async () => await playFromPath(urlPath)}
-    /> */}
-  </View>
+    <SafeAreaView>
+      <ScrollView style={styles.mainScrollContainer}>
+        <View style={styles.mainInnerContainer}>
+          <Text style={styles.title}>Welcome to the Speech-to-Text App</Text>
+          <View style={styles.transcriptionContainer}>
+            {isTranscribing ? (
+              <ActivityIndicator size="small" color="#000" />
+            ) : (
+              <Text
+                style={{
+                  ...styles.transcribedText,
+                  color: transcribedSpeech ? "#000" : "rgb(150,150,150)",
+                }}
+              >
+                {transcribedSpeech ||
+                  "Your transcribed text will be shown here"}
+              </Text>
+            )}
+          </View>
+          <TouchableOpacity
+            style={{
+              ...styles.microphoneButton,
+              opacity: isRecording || isTranscribing ? 0.5 : 1,
+            }}
+            onPressIn={startRecording}
+            onPressOut={stopRecording}
+            disabled={isRecording || isTranscribing}
+          >
+            {isRecording ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <FontAwesome name="microphone" size={40} color="white" />
+            )}
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  button: {
-    width: 50,
-    height: 50,
-  },
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5FCFF",
+  mainScrollContainer: {
     padding: 20,
+    height: "100%",
+    width: "100%",
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: "center",
-    margin: 10,
+  mainInnerContainer: {
+    gap: 75,
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    flexGrow: 1,
   },
-  action: {
-    textAlign: "center",
-    color: "#0000FF",
-    marginVertical: 5,
+  title: {
+    fontSize: 35,
+    padding: 5,
     fontWeight: "bold",
-  },
-  instructions: {
     textAlign: "center",
-    color: "#333333",
-    marginBottom: 5,
-    fontSize: 12,
+    marginBottom: 20,
   },
-  stat: {
-    textAlign: "center",
-    color: "#B0171F",
-    marginBottom: 1,
+  transcriptionContainer: {
+    backgroundColor: "rgb(220,220,220)",
+    width: "100%",
+    height: 300,
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 5,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+  },
+  transcribedText: {
+    fontSize: 20,
+    padding: 5,
+    color: "#000",
+    textAlign: "left",
+    width: "100%",
+  },
+  microphoneButton: {
+    backgroundColor: "red",
+    width: 75,
+    height: 75,
+    marginTop: 100,
+    borderRadius: 50,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
-
-export default VirtualAssistant;
