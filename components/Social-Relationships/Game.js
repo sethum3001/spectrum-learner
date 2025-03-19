@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+/* import React, { useState, useRef, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -286,6 +286,234 @@ const ScenarioGenerator = () => {
       >
         <Ionicons name="arrow-forward-circle" size={32} color="#fff" />
       </TouchableOpacity>
+    </KeyboardAvoidingView>
+  );
+};
+
+export default ScenarioGenerator; */
+
+import React, { useState } from 'react';
+import { 
+  View, Text, TextInput, TouchableOpacity, ScrollView, Image, 
+  StyleSheet, Dimensions, KeyboardAvoidingView, Platform
+} from 'react-native';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+
+const { width } = Dimensions.get('window');
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#E3F2FD', // Soft blue
+  },
+  scrollViewContainer: {
+    flexGrow: 1,
+    padding: 20,
+  },
+  historyEntryContainer: {
+    backgroundColor: '#FFEB3B', 
+    borderRadius: 15,
+    padding: 15,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  historyScenarioText: {
+    fontSize: 18,
+    color: '#333',
+    fontWeight: 'bold',
+  },
+  imageCountInputContainer: {
+    flexDirection: 'row',
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  imageCountLabel: {
+    marginRight: 10,
+    fontSize: 16,
+    color: '#00796B',
+    fontWeight: 'bold',
+  },
+  imageCountInput: {
+    width: 50,
+    borderWidth: 1,
+    borderColor: '#00796B',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 5,
+    textAlign: 'center',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    backgroundColor: '#FFF',
+    borderRadius: 25,
+    padding: 10,
+  },
+  input: {
+    flex: 1,
+    padding: 10,
+    fontSize: 16,
+    borderRadius: 20,
+  },
+  sendButton: {
+    marginLeft: 10,
+    padding: 10,
+    backgroundColor: '#0288D1',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  simplifyButton: {
+    backgroundColor: '#D84315',
+    borderRadius: 25,
+    padding: 10,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  floatingButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    position: 'absolute',
+    bottom: 20,
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+  floatingButton: {
+    backgroundColor: '#FF7043',
+    borderRadius: 30,
+    width: 60,
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+  },
+  imageOutlineContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 10,
+    justifyContent: 'center',
+  },
+  imageOutline: {
+    width: width / 3 - 20,
+    height: width / 3 - 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#0288D1',
+    backgroundColor: 'rgba(0, 136, 209, 0.1)',
+    marginBottom: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imagePlaceholderText: {
+    color: '#0288D1',
+    fontSize: 14,
+  },
+});
+
+const generateScenario = (input, level = 0) => {
+  const scenarios = [
+    `Original: ${input}`,
+    `Simplified (Level 1): Less complex ${input}`,
+    `Simplified (Level 2): Easier version ${input}`,
+    `Simplified (Level 3): Very simple ${input}`
+  ];
+  return scenarios[Math.min(level, scenarios.length - 1)];
+};
+
+const ScenarioGenerator = () => {
+  const [input, setInput] = useState('');
+  const [imageCount, setImageCount] = useState('4');
+  const [scenarioHistory, setScenarioHistory] = useState([]);
+  const router = useRouter();
+  
+  const handleSubmit = () => {
+    if (!input.trim()) return;
+
+    const parsedImageCount = parseInt(imageCount);
+    if (isNaN(parsedImageCount) || parsedImageCount < 1 || parsedImageCount > 10) {
+      alert('Please enter a number between 1 and 10');
+      return;
+    }
+
+    const newEntry = {
+      input,
+      scenario: generateScenario(input),
+      simplificationLevel: 0,
+      imageCount: parsedImageCount,
+      timestamp: Date.now()
+    };
+    setScenarioHistory([...scenarioHistory, newEntry]);
+    setInput('');
+  };
+  
+  const handleSimplify = (index) => {
+    const updatedHistory = [...scenarioHistory];
+    const entry = updatedHistory[index];
+    entry.simplificationLevel = Math.min(entry.simplificationLevel + 1, 3);
+    entry.scenario = generateScenario(entry.input, entry.simplificationLevel);
+    setScenarioHistory(updatedHistory);
+  };
+
+  return (
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView contentContainerStyle={styles.scrollViewContainer} keyboardShouldPersistTaps="handled">
+        
+        <View style={styles.imageCountInputContainer}>
+          <Text style={styles.imageCountLabel}>Number of Images:</Text>
+          <TextInput 
+            style={styles.imageCountInput}
+            value={imageCount}
+            onChangeText={setImageCount}
+            keyboardType="numeric"
+            placeholder="4"
+          />
+        </View>
+
+        {scenarioHistory.map((entry, index) => (
+          <View key={entry.timestamp} style={styles.historyEntryContainer}>
+            <Text style={styles.historyScenarioText}>{entry.scenario}</Text>
+
+            {/* Image Outline */}
+            <View style={styles.imageOutlineContainer}>
+              {[...Array(entry.imageCount)].map((_, imgIndex) => (
+                <View key={`${imgIndex}-${entry.timestamp}`} style={styles.imageOutline}>
+                  <Text style={styles.imagePlaceholderText}>Image {imgIndex + 1}</Text>
+                </View>
+              ))}
+            </View>
+
+            {entry.simplificationLevel < 3 && (
+              <TouchableOpacity onPress={() => handleSimplify(index)} style={styles.simplifyButton}>
+                <FontAwesome5 name="magic" size={18} color="#FFF" style={{ marginRight: 5 }} />
+                <Text style={{ color: 'white', fontSize: 16 }}>Simplify More</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ))}
+
+        <View style={styles.inputContainer}>
+          <TextInput 
+            style={styles.input} 
+            value={input} 
+            onChangeText={setInput} 
+            placeholder="Describe a scenario..." 
+          />
+          <TouchableOpacity onPress={handleSubmit} style={styles.sendButton}>
+            <Ionicons name="send" size={24} color="#FFF" />
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+
+      
+      
     </KeyboardAvoidingView>
   );
 };

@@ -1,6 +1,7 @@
 import { StyleSheet } from "react-native";
 import React from "react";
-import { Tabs, usePathname } from "expo-router";
+import { Tabs } from "expo-router";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 const SocialRepLayout = () => {
   return (
@@ -9,13 +10,38 @@ const SocialRepLayout = () => {
         headerShown: false, // Hide the header
       }}
     >
-      <Tabs.Screen name="index" options={{ title: "Social Scenario Generator?" }} />
-      <Tabs.Screen name="question" options={{ title: "Social Scenario Generasdasdator?" }} />
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Learning",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="book-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="question"
+        options={{
+          title: "Game Time",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="game-controller-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="evaluation"
+        options={{
+          title: "Evaluate",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="stats-chart-outline" size={size} color={color} />
+          ),
+        }}
+      />
+    
+      
       {/* Add other screens here */}
     </Tabs>
   );
 };
 
 export default SocialRepLayout;
-
-// const styles = StyleSheet.create({});
