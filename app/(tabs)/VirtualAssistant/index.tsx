@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Audio } from "expo-av";
+import * as Speech from "expo-speech";
 
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 
@@ -23,6 +24,18 @@ export default function HomeScreen() {
   const isWebFocused = useWebFocus();
   const audioRecordingRef = useRef(new Audio.Recording());
   const webAudioPermissionsRef = useRef<MediaStream | null>(null);
+
+  const playTranscribedText = () => {
+    if (transcribedSpeech) {
+      Speech.speak(transcribedSpeech, {
+        language: "en", // Language code (e.g., 'en' for English)
+        pitch: 1.0, // Pitch of the voice (1.0 is normal)
+        rate: 1.0, // Speed of the speech (1.0 is normal)
+      });
+    } else {
+      console.log("No transcribed text to play.");
+    }
+  };
 
   useEffect(() => {
     if (isWebFocused) {
@@ -85,21 +98,30 @@ export default function HomeScreen() {
               </Text>
             )}
           </View>
-          <TouchableOpacity
-            style={{
-              ...styles.microphoneButton,
-              opacity: isRecording || isTranscribing ? 0.5 : 1,
-            }}
-            onPressIn={startRecording}
-            onPressOut={stopRecording}
-            disabled={isRecording || isTranscribing}
-          >
-            {isRecording ? (
-              <ActivityIndicator size="small" color="white" />
-            ) : (
-              <FontAwesome name="microphone" size={40} color="white" />
-            )}
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TouchableOpacity
+              style={{
+                ...styles.microphoneButton,
+                opacity: isRecording || isTranscribing ? 0.5 : 1,
+              }}
+              onPressIn={startRecording}
+              onPressOut={stopRecording}
+              disabled={isRecording || isTranscribing}
+            >
+              {isRecording ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <FontAwesome name="microphone" size={40} color="white" />
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.playButton}
+              onPress={playTranscribedText}
+              disabled={!transcribedSpeech || isTranscribing}
+            >
+              <FontAwesome name="volume-up" size={30} color="white" />
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -152,5 +174,14 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     alignItems: "center",
     justifyContent: "center",
+  },
+  playButton: {
+    backgroundColor: "green",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20,
   },
 });

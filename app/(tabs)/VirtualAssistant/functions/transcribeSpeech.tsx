@@ -29,12 +29,7 @@ export const transcribeSpeech = async (
 
       // Generate unique filename with timestamp
       const timestamp = new Date().getTime();
-      const fileExtension =
-        Platform.OS === "web"
-          ? "webm"
-          : Platform.OS === "android"
-          ? "amr"
-          : "wav";
+      const fileExtension = "wav";
       const savedFilePath = `${audioDir}recording_${timestamp}.${fileExtension}`;
 
       // Handle different platforms for saving the file
@@ -90,18 +85,8 @@ export const transcribeSpeech = async (
       audioRecordingRef.current = new Audio.Recording();
 
       const audioConfig = {
-        encoding:
-          Platform.OS === "android"
-            ? "AMR_WB"
-            : Platform.OS === "web"
-            ? "WEBM_OPUS"
-            : "LINEAR16",
-        sampleRateHertz:
-          Platform.OS === "android"
-            ? 16000
-            : Platform.OS === "web"
-            ? 48000
-            : 41000,
+        encoding: "LINEAR16", // WAV format
+        sampleRateHertz: 16000, // Standard for speech recognition
         languageCode: "en-US",
       };
 
@@ -112,9 +97,10 @@ export const transcribeSpeech = async (
             : Device.isDevice
             ? process.env.LOCAL_DEV_IP || "localhost"
             : "localhost";
-        const serverUrl = `http://${rootOrigin}:4000`;
+        const serverUrl = `http://${rootOrigin}:8000`;
+        console.log("Server URL:", serverUrl);
 
-        const serverResponse = await fetch(`${serverUrl}/speech-to-text`, {
+        const serverResponse = await fetch(`${serverUrl}/process-audio`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -130,9 +116,7 @@ export const transcribeSpeech = async (
 
         const results = serverResponse?.results;
         if (results) {
-          const transcript = results?.[0].alternatives?.[0].transcript;
-          if (!transcript) return undefined;
-          return transcript;
+          return results;
         } else {
           console.error("No transcript found");
           return undefined;
