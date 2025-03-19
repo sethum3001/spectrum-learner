@@ -58,7 +58,7 @@ export default function StudentProgressScreen() {
   };
 
   const handleContinue = () => {
-    router.push('/(tabs)/Home');
+    router.push('/(tabs)/Home/home');
   };
 
   return (

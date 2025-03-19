@@ -12,6 +12,7 @@ import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import Questions from '@/components/Social-Reciprocity/Questions';
 
 const { width } = Dimensions.get('window');
 
@@ -44,9 +45,24 @@ const questions = [
         ],
         correctAnswer: 2,
     },
+    {
+        question: "What did the girl give Beep?",
+        options: ["A toy", "A hug", "A high five", "A gift"],
+        correctAnswer: 1,
+    },
+    {
+        question: "What did Beep and the girl do together?",
+        options: [
+            "Played games",
+            "Helped others in their town",
+            "Built a robot",
+            "Went to school",
+        ],
+        correctAnswer: 1,
+    },
 ];
 
-export default function preTest() {
+export default function PreTest() {
     const router = useRouter();
     const [sound, setSound] = useState<Audio.Sound | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -62,11 +78,18 @@ export default function preTest() {
             setIsPlaying(true);
         } else {
             const { sound: newSound } = await Audio.Sound.createAsync(
-                require('../../../assets/audio/story-audio.mp3')
+                require('../../../assets/audio/story-audio.mp3'),
+                { shouldPlay: true }
             );
             setSound(newSound);
-            await newSound.playAsync();
             setIsPlaying(true);
+
+            // Listen for when the sound finishes
+            newSound.setOnPlaybackStatusUpdate((status) => {
+                if (status.isLoaded && status.didJustFinish) {
+                    setIsPlaying(false); // Reset to play button
+                }
+            });
         }
     };
 
@@ -85,18 +108,7 @@ export default function preTest() {
         };
     }, [sound]);
 
-    interface Question {
-        question: string;
-        options: string[];
-        correctAnswer: number;
-    }
-
-    interface AnswerHandlerProps {
-        questionIndex: number;
-        answerIndex: number;
-    }
-
-    const handleAnswer = ({ questionIndex, answerIndex }: AnswerHandlerProps) => {
+    const handleAnswer = (questionIndex: number, answerIndex: number) => {
         const newAnswers = [...selectedAnswers];
         newAnswers[questionIndex] = answerIndex;
         setSelectedAnswers(newAnswers);
@@ -146,22 +158,14 @@ export default function preTest() {
 
                 <View style={styles.questionsContainer}>
                     <Text style={styles.questionsTitle}>Let's Answer Some Questions!</Text>
-                    {questions.map((q, qIndex) => (
-                        <View key={qIndex} style={styles.questionBox}>
-                            <Text style={styles.questionText}>{q.question}</Text>
-                            {q.options.map((option, oIndex) => (
-                                <TouchableOpacity
-                                    key={oIndex}
-                                    style={[
-                                        styles.optionButton,
-                                        selectedAnswers[qIndex] === oIndex && styles.selectedOption,
-                                    ]}
-                                    onPress={() => handleAnswer({ questionIndex: qIndex, answerIndex: oIndex })}
-                                >
-                                    <Text style={styles.optionText}>{option}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
+                    {questions.slice(0, 10).map((q, qIndex) => (
+                        <Questions
+                            key={qIndex}
+                            question={q}
+                            questionIndex={qIndex}
+                            selectedAnswer={selectedAnswers[qIndex]}
+                            onAnswer={handleAnswer}
+                        />
                     ))}
                 </View>
 
@@ -198,6 +202,7 @@ export default function preTest() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        marginTop: 50,
     },
     scrollContent: {
         padding: 20,
@@ -238,31 +243,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#4CAF50',
         marginBottom: 15,
-    },
-    questionBox: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 15,
-        padding: 15,
-        marginBottom: 20,
-    },
-    questionText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333333',
-        marginBottom: 10,
-    },
-    optionButton: {
-        backgroundColor: '#E0F2F1',
-        borderRadius: 10,
-        padding: 15,
-        marginBottom: 10,
-    },
-    selectedOption: {
-        backgroundColor: '#80CBC4',
-    },
-    optionText: {
-        fontSize: 16,
-        color: '#333333',
     },
     continueButton: {
         backgroundColor: '#BDBDBD',
