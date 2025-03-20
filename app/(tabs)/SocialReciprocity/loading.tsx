@@ -1,18 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
-import { useRouter } from 'expo-router';
 
 const Loading = () => {
-    const router = useRouter();
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            router.push('/(tabs)/SocialReciprocity/preTest');
-        }, 5000);
-
-        return () => clearTimeout(timer);
-    }, [router]);
-
     return (
         <View style={styles.container}>
             <Image

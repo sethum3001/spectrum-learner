@@ -7,43 +7,91 @@ import {
     StyleSheet,
     Dimensions,
     Image,
+    ActivityIndicator,
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import Questions from '@/components/Social-Reciprocity/Questions';
 
 const { width } = Dimensions.get('window');
 
-const story =
-    "Once upon a time, there was a friendly robot named Beep. Beep loved to help people. One day, Beep saw a little girl who was sad because she couldn't reach her toy on a high shelf. Beep used its extendable arm to get the toy for her. The girl was so happy, she gave Beep a big hug. From that day on, Beep and the girl became best friends, playing together and helping others in their town.";
-
 export default function PreTest() {
     const router = useRouter();
+    const params = useLocalSearchParams();
+    const [isLoading, setIsLoading] = useState(true);
     const [sound, setSound] = useState<Audio.Sound | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [showResult, setShowResult] = useState(false);
     const [feedbackMessage, setFeedbackMessage] = useState('');
     const [score, setScore] = useState(0);
+    const [questions, setQuestions] = useState([]);
+    const [story, setStory] = useState('');
+    const [storyTitle, setStoryTitle] = useState('');
+    const [paramsProcessed, setParamsProcessed] = useState(false);
+
+    // Validate and process params - ONLY ONCE
+    // Add this in your useEffect where you process params
+    useEffect(() => {
+        // Skip if we've already processed params
+        if (paramsProcessed) return;
+
+        try {
+            // Check if we have all required params
+            if (!params.story || !params.questionsJson) {
+                console.error('Missing route parameters');
+                router.replace('/(tabs)/SocialReciprocity');
+                return;
+            }
+
+            const storyText = String(params.story);
+            setStory(storyText);
+
+            // Extract title if available
+            const titleMatch = storyText.match(/\*\*(.*?)\*\*/);
+            if (titleMatch && titleMatch[1]) {
+                setStoryTitle(titleMatch[1]);
+            }
+
+            try {
+                const parsedQuestions = JSON.parse(String(params.questionsJson));
+                setQuestions(parsedQuestions);
+            } catch (e) {
+                console.error('Failed to parse questions:', e);
+                setQuestions([]);
+            }
+
+            // Mark params as processed to avoid repeated processing
+            setParamsProcessed(true);
+            setIsLoading(false);
+        } catch (error) {
+            console.error('Error processing parameters:', error);
+            router.replace('/(tabs)/SocialReciprocity');
+        }
+    }, [params, router, paramsProcessed]);
 
     const playSound = async () => {
         if (sound) {
             await sound.playAsync();
             setIsPlaying(true);
         } else {
-            const { sound: newSound } = await Audio.Sound.createAsync(
-                require('../../../assets/audio/story-audio.mp3'),
-                { shouldPlay: true }
-            );
-            setSound(newSound);
-            setIsPlaying(true);
+            try {
+                const { sound: newSound } = await Audio.Sound.createAsync(
+                    require('../../../assets/audio/story-audio.mp3'),
+                    { shouldPlay: true }
+                );
+                setSound(newSound);
+                setIsPlaying(true);
 
-            newSound.setOnPlaybackStatusUpdate((status) => {
-                if (status.isLoaded && status.didJustFinish) {
-                    setIsPlaying(false);
-                }
-            });
+                newSound.setOnPlaybackStatusUpdate((status) => {
+                    if (status.isLoaded && status.didJustFinish) {
+                        setIsPlaying(false);
+                    }
+                });
+            } catch (error) {
+                console.error("Couldn't play audio:", error);
+            }
         }
     };
 
@@ -75,11 +123,21 @@ export default function PreTest() {
         }
     };
 
+    // Show loading indicator while data is being prepared
+    if (isLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#4CAF50" />
+                <Text style={styles.loadingText}>Loading your story and questions...</Text>
+            </View>
+        );
+    }
+
     return (
         <LinearGradient colors={['#F0F8FF', '#E6E6FA']} style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <View style={styles.storyContainer}>
-                    <Text style={styles.storyTitle}>Beep's Big Day</Text>
+                    <Text style={styles.storyTitle}>{storyTitle}</Text>
                     <Image
                         source={require('../../../assets/images/robot-story.png')}
                         style={styles.storyImage}
@@ -99,7 +157,11 @@ export default function PreTest() {
 
                 <View style={styles.questionsContainer}>
                     <Text style={styles.questionsTitle}>Let's Answer Some Questions!</Text>
-                    <Questions onComplete={handleQuizCompletion} />
+                    {questions && questions.length > 0 ? (
+                        <Questions questions={questions} onComplete={handleQuizCompletion} />
+                    ) : (
+                        <Text style={styles.noQuestionsText}>No questions available.</Text>
+                    )}
                 </View>
 
                 {showResult && (
@@ -110,7 +172,12 @@ export default function PreTest() {
                         <Text style={styles.feedbackText}>{feedbackMessage}</Text>
                         <TouchableOpacity
                             style={styles.nextButton}
-                            onPress={() => router.push('/(tabs)/SocialReciprocity/caretakerInput')}
+                            onPress={() =>
+                                router.push({
+                                    pathname: '/(tabs)/SocialReciprocity/caretakerInput',
+                                    params: { accuracy: Math.round((score / questions.length) * 100) }, 
+                                })
+                            }
                         >
                             <Text style={styles.nextButtonText}>Start Learning</Text>
                         </TouchableOpacity>
@@ -129,6 +196,17 @@ const styles = StyleSheet.create({
     scrollContent: {
         padding: 20,
     },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F0F8FF',
+    },
+    loadingText: {
+        marginTop: 20,
+        fontSize: 18,
+        color: '#4CAF50',
+    },
     storyContainer: {
         backgroundColor: '#FFFFFF',
         borderRadius: 20,
@@ -137,10 +215,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     storyTitle: {
-        fontSize: 24,
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#4CAF50',
         marginBottom: 10,
+        alignItems: 'center',
     },
     storyImage: {
         width: width - 80,
@@ -165,6 +244,12 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#4CAF50',
         marginBottom: 15,
+    },
+    noQuestionsText: {
+        fontSize: 16,
+        color: '#FF6347',
+        textAlign: 'center',
+        padding: 20,
     },
     resultContainer: {
         backgroundColor: '#FFFFFF',

@@ -6,11 +6,12 @@ import {
     StyleSheet,
     TouchableOpacity,
     Image,
+    ActivityIndicator,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 const emotions = [
     { name: 'Happiness', icon: '😊', color: '#FFD700', description: 'Rate how happy the child seemed during the activity (0 for not happy, 100 for very happy).' },
@@ -21,10 +22,16 @@ const emotions = [
 
 export default function caretakerInputScreen() {
     const router = useRouter();
+    const params = useLocalSearchParams();
+
+    // Get accuracy from PreTest params
+    const accuracy = params.accuracy || 0; // Default to 0 if not provided
 
     const [emotionValues, setEmotionValues] = useState<EmotionValues>(
         emotions.reduce((acc, emotion) => ({ ...acc, [emotion.name]: 50 }), {} as EmotionValues)
     );
+
+    const [isSubmitting, setIsSubmitting] = useState(false); // Spinner state
 
     interface EmotionValues {
         [key: string]: number;
@@ -34,9 +41,46 @@ export default function caretakerInputScreen() {
         setEmotionValues((prev: EmotionValues) => ({ ...prev, [emotion]: value }));
     };
 
-    const handleSubmit = () => {
-        console.log('Emotion values:', emotionValues);
-        router.push('/(tabs)/SocialReciprocity/studentProgress');
+    const handleSubmit = async () => {
+        setIsSubmitting(true); // Show spinner and disable button
+        try {
+            const requestBody = {
+                accuracy, // Use accuracy from PreTest
+                sadness: emotionValues['Sadness'],
+                happiness: emotionValues['Happiness'],
+                engagement: emotionValues['Engagement'],
+                time_spent: emotionValues['Time Spent'],
+                current_level: 1, // Replace with the actual current level if available
+            };
+
+            const response = await fetch(
+                'http://social-reciprocity-lp-production.up.railway.app/api/adjust_level',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error('Failed to adjust level');
+            }
+
+            const data = await response.json();
+            console.log('API Response:', data);
+
+            // Navigate to the student progress screen with the new level
+            router.push({
+                pathname: '/(tabs)/SocialReciprocity/studentProgress',
+                params: { newLevel: data.new_level },
+            });
+        } catch (error) {
+            console.error('Error adjusting level:', error);
+        } finally {
+            setIsSubmitting(false); // Hide spinner and re-enable button
+        }
     };
 
     return (
@@ -87,9 +131,19 @@ export default function caretakerInputScreen() {
                     </View>
                 ))}
 
-                <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-                    <Text style={styles.submitButtonText}>Submit</Text>
-                    <Ionicons name="arrow-forward" size={24} color="#FFFFFF" />
+                <TouchableOpacity
+                    style={[styles.submitButton, isSubmitting && styles.disabledButton]}
+                    onPress={handleSubmit}
+                    disabled={isSubmitting} // Disable button while submitting
+                >
+                    {isSubmitting ? (
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                        <>
+                            <Text style={styles.submitButtonText}>Submit</Text>
+                            <Ionicons name="arrow-forward" size={24} color="#FFFFFF" />
+                        </>
+                    )}
                 </TouchableOpacity>
             </ScrollView>
         </LinearGradient>
@@ -179,6 +233,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 20,
+    },
+    disabledButton: {
+        backgroundColor: '#A5D6A7',
     },
     submitButtonText: {
         color: '#FFFFFF',

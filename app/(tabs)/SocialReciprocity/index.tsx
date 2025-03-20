@@ -25,8 +25,95 @@ export default function SocialReciprocity() {
     ).start();
   }, [bounceAnim]);
 
-  const handleStartLearning = () => {
-    router.push('/(tabs)/SocialReciprocity/loading'); // Navigate to the loading screen
+  function parseQuestions(questionsStr: string) {
+    const lines = questionsStr.split('\n').filter(line => line.trim().length > 0);
+    const questions = [];
+    let currentQuestion: { question: string; options: string[]; correctAnswer: number | null } | null = null;
+
+    for (const line of lines) {
+      if (/^\d+\./.test(line)) {
+        if (currentQuestion) {
+          questions.push(currentQuestion);
+        }
+        const questionText = line.replace(/^\d+\.\s*/, '').trim();
+        currentQuestion = {
+          question: questionText,
+          options: [],
+          correctAnswer: null,
+        };
+      } else if (/^[A-D]\./.test(line)) {
+        const optionText = line.replace(/^[A-D]\.\s*/, '').trim();
+        if (currentQuestion) {
+          currentQuestion.options.push(optionText);
+        }
+      } else if (line.startsWith('Correct Answer:')) {
+        const answerLetter = line.replace('Correct Answer:', '').trim();
+        const answerIndex = answerLetter.charCodeAt(0) - 'A'.charCodeAt(0);
+        if (currentQuestion) {
+          currentQuestion.correctAnswer = answerIndex;
+        }
+      }
+    }
+    if (currentQuestion) {
+      questions.push(currentQuestion);
+    }
+    return questions;
+  }
+
+  const handleStartLearning = async () => {
+    // First navigate to loading screen
+    router.push('/(tabs)/SocialReciprocity/loading');
+
+    try {
+      const requestBody = {
+        current_level: 1,
+      };
+
+      const response = await fetch(
+        'http://social-reciprocity-lp-production.up.railway.app/api/generate_story_and_questions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch data from the server');
+      }
+
+      const data = await response.json();
+      console.log('Data:', data);
+
+      // Store data in localStorage/AsyncStorage first
+      if (data.story && data.questions) {
+        const parsedQuestions = parseQuestions(data.questions);
+
+        // Save to global state or AsyncStorage here if needed
+
+        // Use setTimeout to ensure clean navigation stack
+        setTimeout(() => {
+          router.replace({
+            pathname: '/(tabs)/SocialReciprocity/preTest',
+            params: {
+              story: data.story,
+              questionsJson: JSON.stringify(parsedQuestions),
+            },
+          });
+        }, 300); // Small delay to ensure navigation completes
+      } else {
+        console.error('Incomplete data from the server:', data);
+        setTimeout(() => {
+          router.replace('/(tabs)/SocialReciprocity');
+        }, 300);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setTimeout(() => {
+        router.replace('/(tabs)/SocialReciprocity');
+      }, 300);
+    }
   };
 
   return (
