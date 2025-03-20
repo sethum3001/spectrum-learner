@@ -1,291 +1,264 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  ScrollView, 
-  Image, 
-  StyleSheet, 
-  Dimensions,
-  Alert,
-  KeyboardAvoidingView,
-  Platform
+import React, { useState } from 'react';
+import {
+  View, Text, TextInput, TouchableOpacity, ScrollView, Image,
+  StyleSheet, Dimensions, KeyboardAvoidingView, Platform
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f4f8',
+    backgroundColor: '#E3F2FD', // Warm, kid-friendly color
   },
   scrollViewContainer: {
+    marginTop: 50,
     flexGrow: 1,
     padding: 20,
   },
-  contentContainer: {
-    paddingBottom: 20,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#D84315', // Playful orange
+    textAlign: 'center',
+    marginBottom: 10,
   },
-  historyContainer: {
+  description: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
     marginBottom: 20,
   },
-  historyEntryContainer: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 15,
+  characterContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  characterImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 10,
+  },
+  speechBubble: {
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    padding: 15,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
   },
-  historyScenarioText: {
+  speechText: {
     fontSize: 16,
-    marginBottom: 10,
     color: '#333',
-  },
-  simplificationLevelText: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 5,
-  },
-  imageCountInputContainer: {
-    flexDirection: 'row',
-    marginBottom: 10,
-    alignItems: 'center',
-  },
-  imageCountLabel: {
-    marginRight: 10,
-    fontSize: 16,
-  },
-  imageCountInput: {
-    width: 50,
-    borderWidth: 1,
-    borderColor: '#ced4da',
-    borderRadius: 10,
-    padding: 5,
     textAlign: 'center',
   },
-  imageGrid: {
+  historyEntryContainer: {
+    backgroundColor: '#FFEB3B', // Bright yellow for fun
+    borderRadius: 15,
+    padding: 15,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  historyScenarioText: {
+    fontSize: 18,
+    color: '#333',
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  imageCountSelector: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    marginBottom: 20,
   },
-  image: {
-    width: width / 3 - 20,
-    height: width / 3 - 20,
-    borderRadius: 10,
-    marginBottom: 10,
+  imageCountButton: {
+    backgroundColor: '#0288D1', // Bright blue
+    borderRadius: 20,
+    padding: 10,
+    margin: 5,
+  },
+  imageCountText: {
+    color: '#FFF',
+    fontSize: 16,
   },
   inputContainer: {
     flexDirection: 'row',
-    marginBottom: 10,
+    alignItems: 'center',
+    marginTop: 10,
+    backgroundColor: '#FFF',
+    borderRadius: 25,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
   },
   input: {
     flex: 1,
     padding: 10,
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#ced4da',
     borderRadius: 20,
   },
   sendButton: {
     marginLeft: 10,
     padding: 10,
-    backgroundColor: '#007bff',
-    borderRadius: 20,
+    backgroundColor: '#0288D1',
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  sendButtonText: {
-    color: 'white',
-    fontSize: 16,
   },
   simplifyButton: {
-    backgroundColor: '#28a745',
-    borderRadius: 20,
+    backgroundColor: '#D84315', // Warm orange
+    borderRadius: 25,
     padding: 10,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
     marginTop: 10,
   },
-  simplifyButtonText: {
-    color: 'white',
-    fontSize: 16,
+  imageOutlineContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 10,
+    justifyContent: 'center',
   },
-  floatingButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    backgroundColor: '#4ECDC4',
-    borderRadius: 30,
-    width: 60,
-    height: 60,
+  imageOutline: {
+    width: width / 3 - 20,
+    height: width / 3 - 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#0288D1',
+    backgroundColor: 'rgba(0, 136, 209, 0.1)',
+    margin: 5,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+  },
+  imagePlaceholderText: {
+    color: '#0288D1',
+    fontSize: 14,
   },
 });
 
-// Mock scenario generation function with simplification levels
-const generateScenario = (input, simplificationLevel = 0) => {
-  // In a real app, this would be an API call or AI-generated content
+const generateScenario = (input, level = 0) => {
   const scenarios = [
-    `Original Scenario: ${input}`,
-    `Simplified Scenario (Level 1): Simplified version of ${input}`,
-    `Simplified Scenario (Level 2): More simplified version of ${input}`,
-    `Simplified Scenario (Level 3): Extremely simplified version of ${input}`
+    `Original: ${input}`,
+    `Simplified: Less complex ${input}`,
+    `Easier: Simple ${input}`,
+    `Super Easy: Very simple ${input}`,
   ];
-  return scenarios[Math.min(simplificationLevel, scenarios.length - 1)];
+  return scenarios[Math.min(level, scenarios.length - 1)];
 };
 
 const ScenarioGenerator = () => {
   const [input, setInput] = useState('');
-  const [imageCount, setImageCount] = useState('4');
+  const [imageCount, setImageCount] = useState(4); // Default to 4
   const [scenarioHistory, setScenarioHistory] = useState([]);
-  const scrollViewRef = useRef(null);
   const router = useRouter();
 
   const handleSubmit = () => {
-    // Validate image count input
-    const parsedImageCount = parseInt(imageCount);
-    if (isNaN(parsedImageCount) || parsedImageCount < 1 || parsedImageCount > 10) {
-      Alert.alert(
-        'Invalid Image Count', 
-        'Please enter a number between 1 and 10'
-      );
+    if (!input.trim()) return;
+
+    if (imageCount < 1 || imageCount > 10) {
+      alert('Please pick between 1 and 10 pictures!');
       return;
     }
 
-    if (input.trim() === '') return;
-
-    // Generate scenario and create a new history entry
-    const scenario = generateScenario(input);
     const newEntry = {
       input,
-      scenario,
-      imageCount: parsedImageCount,
+      scenario: generateScenario(input),
       simplificationLevel: 0,
-      timestamp: Date.now()
+      imageCount,
+      timestamp: Date.now(),
     };
-
-    // Update scenario history
     setScenarioHistory([...scenarioHistory, newEntry]);
-    
-    // Reset input
     setInput('');
-    setImageCount('');
   };
 
   const handleSimplify = (index) => {
-    // Create a copy of the scenario history
     const updatedHistory = [...scenarioHistory];
-    const entryToSimplify = updatedHistory[index];
-
-    // Increase simplification level
-    const newSimplificationLevel = Math.min(
-      (entryToSimplify.simplificationLevel || 0) + 1, 
-      3
-    );
-
-    // Generate simplified scenario
-    const simplifiedScenario = generateScenario(
-      entryToSimplify.input, 
-      newSimplificationLevel
-    );
-
-    // Update the entry
-    entryToSimplify.scenario = simplifiedScenario;
-    entryToSimplify.simplificationLevel = newSimplificationLevel;
-
-    // Update the history
+    const entry = updatedHistory[index];
+    entry.simplificationLevel = Math.min(entry.simplificationLevel + 1, 3);
+    entry.scenario = generateScenario(entry.input, entry.simplificationLevel);
     setScenarioHistory(updatedHistory);
   };
 
-  const renderHistoryEntry = (entry, index) => {
-    return (
-      <View key={entry.timestamp} style={styles.historyEntryContainer}>
-        <Text style={styles.historyScenarioText}>{entry.scenario}</Text>
-        <Text style={styles.simplificationLevelText}>
-          Simplification Level: {entry.simplificationLevel}
+  return (
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView contentContainerStyle={styles.scrollViewContainer} keyboardShouldPersistTaps="handled">
+        <Text style={styles.title}>Learn Social Skills with Fun Pictures!</Text>
+        <Text style={styles.description}>
+          Type a situation, and I’ll show you how to handle it with pictures. You can make it easier too!
         </Text>
-        <View style={styles.imageGrid}>
-          {[...Array(entry.imageCount)].map((_, imgIndex) => (
-            <Image 
-              key={`${imgIndex}-${entry.timestamp}`}
-              source={{ 
-                uri: `https://via.placeholder.com/150x150.png?text=Image+${imgIndex + 1}` 
-              }}
-              style={styles.image}
-            />
+
+        <View style={styles.characterContainer}>
+          {/* Replace with a real character image */}
+          <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.characterImage} />
+          <View style={styles.speechBubble}>
+            <Text style={styles.speechText}>
+              Tell me a situation, and I’ll show you how to fix it with pictures!
+            </Text>
+          </View>
+        </View>
+
+        <Text style={{ fontSize: 16, color: '#D84315', textAlign: 'center', marginBottom: 10 }}>
+          How many pictures do you want?
+        </Text>
+        <View style={styles.imageCountSelector}>
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+            <TouchableOpacity
+              key={num}
+              style={[
+                styles.imageCountButton,
+                imageCount === num && { backgroundColor: '#D84315' }, // Highlight selected
+              ]}
+              onPress={() => setImageCount(num)}
+            >
+              <Text style={styles.imageCountText}>{num}</Text>
+            </TouchableOpacity>
           ))}
         </View>
-        {entry.simplificationLevel < 3 && (
-          <TouchableOpacity 
-            onPress={() => handleSimplify(index)} 
-            style={styles.simplifyButton}
-          >
-            <Text style={styles.simplifyButtonText}>Simplify More</Text>
+
+        {scenarioHistory.map((entry, index) => (
+          <View key={entry.timestamp} style={styles.historyEntryContainer}>
+            <Text style={styles.historyScenarioText}>{entry.scenario}</Text>
+
+            <View style={styles.imageOutlineContainer}>
+              {[...Array(entry.imageCount)].map((_, imgIndex) => (
+                <View key={`${imgIndex}-${entry.timestamp}`} style={styles.imageOutline}>
+                  <Text style={styles.imagePlaceholderText}>Step {imgIndex + 1}</Text>
+                </View>
+              ))}
+            </View>
+
+            {entry.simplificationLevel < 3 && (
+              <TouchableOpacity onPress={() => handleSimplify(index)} style={styles.simplifyButton}>
+                <FontAwesome5 name="lightbulb" size={18} color="#FFF" style={{ marginRight: 5 }} />
+                <Text style={{ color: '#FFF', fontSize: 16 }}>Make it Easier</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ))}
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={input}
+            onChangeText={setInput}
+            placeholder="What happened? (e.g., Someone took my toy)"
+          />
+          <TouchableOpacity onPress={handleSubmit} style={styles.sendButton}>
+            <Ionicons name="send" size={24} color="#FFF" />
           </TouchableOpacity>
-        )}
-      </View>
-    );
-  };
-
-  return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView 
-        ref={scrollViewRef}
-        contentContainerStyle={styles.scrollViewContainer}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.contentContainer}>
-          <View style={styles.imageCountInputContainer}>
-            <Text style={styles.imageCountLabel}>Number of Images:</Text>
-            <TextInput 
-              style={styles.imageCountInput}
-              value={imageCount}
-              onChangeText={setImageCount}
-              keyboardType="numeric"
-              placeholder="4"
-            />
-          </View>
-
-          <View style={styles.historyContainer}>
-            <ScrollView>
-              {scenarioHistory.map(renderHistoryEntry).reverse()}
-            </ScrollView>
-          </View>
-          
-          <View style={styles.inputContainer}>
-            <TextInput 
-              style={styles.input}
-              value={input}
-              onChangeText={setInput}
-              placeholder="Describe a scenario..."
-            />
-            <TouchableOpacity onPress={handleSubmit} style={styles.sendButton}>
-              <Text style={styles.sendButtonText}>Send</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </ScrollView>
-      <TouchableOpacity 
-        style={styles.floatingButton} 
-        onPress={() => router.push('/(tabs)/SocialRelationships/question')}
-      >
-        <Ionicons name="arrow-forward-circle" size={32} color="#fff" />
-      </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 };

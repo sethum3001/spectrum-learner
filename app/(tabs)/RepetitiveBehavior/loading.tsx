@@ -1,14 +1,27 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Image } from 'expo-image';
 
 const Loading = () => {
+    const router = useRouter();
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            router.push('/(tabs)/RepetitiveBehavior/StoryPromptSelection');
+        }, 5000);
+
+        return () => clearTimeout(timer);
+    }, [router]);
+
     return (
         <View style={styles.container}>
             <Image
-                source={require('../../../assets/images/fun-loading.gif')}
+                source={require('../../../assets/animations/dragon.gif')}
                 style={styles.gif}
+                contentFit="contain"
             />
-            <Text style={styles.text}>Wait till a fun story and questions generate...</Text>
+            <Text style={styles.text}>Adventure awaits...</Text>
         </View>
     );
 };
