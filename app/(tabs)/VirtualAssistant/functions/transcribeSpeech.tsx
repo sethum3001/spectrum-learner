@@ -93,9 +93,9 @@ export const transcribeSpeech = async (
       if (recordingUri && dataUrl) {
         const rootOrigin =
           Platform.OS === "android"
-            ? "192.168.1.10"
+            ? "https://virtual-assistant-spectrum-learn.railway.internal"
             : Device.isDevice
-            ? "192.168.1.10"
+            ? "https://virtual-assistant-spectrum-learn.railway.internal"
             : "localhost";
         const serverUrl = `http://${rootOrigin}:8000`;
         console.log("Server URL:", serverUrl);
