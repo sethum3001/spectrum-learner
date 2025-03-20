@@ -31,7 +31,7 @@ export default function Home() {
       icon: 'message-circle',
       color: '#FFF3D7', // Pastel yellow
       description: 'Get help from your friendly assistant!',
-      href: '/(tabs)/RepetitiveBehavior',
+      href: '/(tabs)/VirtualAssistant',
     },
     {
       title: 'Special Interests',
