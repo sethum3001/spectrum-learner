@@ -93,9 +93,9 @@ export const transcribeSpeech = async (
       if (recordingUri && dataUrl) {
         const rootOrigin =
           Platform.OS === "android"
-            ? "10.0.2.2"
+            ? "192.168.1.10"
             : Device.isDevice
-            ? process.env.LOCAL_DEV_IP || "localhost"
+            ? "192.168.1.10"
             : "localhost";
         const serverUrl = `http://${rootOrigin}:8000`;
         console.log("Server URL:", serverUrl);
@@ -114,9 +114,14 @@ export const transcribeSpeech = async (
           .then((res) => res.json())
           .catch((e: Error) => console.error(e));
 
-        const results = serverResponse?.results;
-        if (results) {
-          return results;
+        // Extract the main response and follow-up questions
+        const mainResponse = serverResponse?.main_response;
+        const followUpQuestions = serverResponse?.follow_up_questions;
+
+        if (mainResponse) {
+          console.log("Main Response:", mainResponse);
+          console.log("Follow-up Questions:", followUpQuestions);
+          return { mainResponse, followUpQuestions }; // Return both for further use
         } else {
           console.error("No transcript found");
           return undefined;

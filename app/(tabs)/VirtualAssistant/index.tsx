@@ -3,19 +3,26 @@ import {
   StyleSheet,
   Text,
   SafeAreaView,
-  ScrollView,
   View,
   ActivityIndicator,
   TouchableOpacity,
+  Dimensions,
+  ScrollView,
 } from "react-native";
 import { Audio } from "expo-av";
 import * as Speech from "expo-speech";
+import { LinearGradient } from "expo-linear-gradient";
+import LottieView from "lottie-react-native";
 
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 import useWebFocus from "@/hooks/useWebFocus";
 import { recordSpeech } from "./functions/recordSpeech";
 import { transcribeSpeech } from "./functions/transcribeSpeech";
+
+// Import your Lottie JSON files
+import micOnAnimation from "./../../../assets/animations/Animation - 1742404403182.json";
+import micOffAnimation from "./../../../assets/animations/Animation - 1742404496205.json";
 
 export default function HomeScreen() {
   const [transcribedSpeech, setTranscribedSpeech] = useState("");
@@ -24,18 +31,25 @@ export default function HomeScreen() {
   const isWebFocused = useWebFocus();
   const audioRecordingRef = useRef(new Audio.Recording());
   const webAudioPermissionsRef = useRef<MediaStream | null>(null);
+  const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
 
   const playTranscribedText = () => {
     if (transcribedSpeech) {
       Speech.speak(transcribedSpeech, {
-        language: "en", // Language code (e.g., 'en' for English)
-        pitch: 1.0, // Pitch of the voice (1.0 is normal)
-        rate: 1.0, // Speed of the speech (1.0 is normal)
+        language: "en",
+        pitch: 1.0,
+        rate: 1.0,
       });
     } else {
       console.log("No transcribed text to play.");
     }
   };
+
+  useEffect(() => {
+    if (transcribedSpeech) {
+      playTranscribedText();
+    }
+  }, [transcribedSpeech]);
 
   useEffect(() => {
     if (isWebFocused) {
@@ -69,8 +83,11 @@ export default function HomeScreen() {
     setIsRecording(false);
     setIsTranscribing(true);
     try {
-      const speechTranscript = await transcribeSpeech(audioRecordingRef);
-      setTranscribedSpeech(speechTranscript || "");
+      const result = await transcribeSpeech(audioRecordingRef);
+      const mainResponse = result?.mainResponse || "";
+      const followUpQuestions = result?.followUpQuestions || [];
+      setTranscribedSpeech(mainResponse);
+      setFollowUpQuestions(followUpQuestions); // Set follow-up questions
     } catch (e) {
       console.error(e);
     } finally {
@@ -79,109 +96,174 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView>
-      <ScrollView style={styles.mainScrollContainer}>
-        <View style={styles.mainInnerContainer}>
-          <Text style={styles.title}>Welcome to the Speech-to-Text App</Text>
+    <LinearGradient
+      colors={["#FFFFFF", "#90EE90"]}
+      style={styles.gradientContainer}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          {/* Lottie Animation */}
+          <LottieView
+            source={isRecording ? micOnAnimation : micOffAnimation}
+            style={styles.lottieAnimation}
+            autoPlay
+            loop
+          />
+
+          {/* Transcription Box */}
           <View style={styles.transcriptionContainer}>
-            {isTranscribing ? (
-              <ActivityIndicator size="small" color="#000" />
-            ) : (
-              <Text
-                style={{
-                  ...styles.transcribedText,
-                  color: transcribedSpeech ? "#000" : "rgb(150,150,150)",
-                }}
-              >
-                {transcribedSpeech ||
-                  "Your transcribed text will be shown here"}
-              </Text>
-            )}
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <TouchableOpacity
-              style={{
-                ...styles.microphoneButton,
-                opacity: isRecording || isTranscribing ? 0.5 : 1,
-              }}
-              onPressIn={startRecording}
-              onPressOut={stopRecording}
-              disabled={isRecording || isTranscribing}
-            >
-              {isRecording ? (
-                <ActivityIndicator size="small" color="white" />
+            <ScrollView>
+              {isTranscribing ? (
+                <ActivityIndicator size="small" color="#6C9BCF" />
               ) : (
-                <FontAwesome name="microphone" size={40} color="white" />
+                <>
+                  {/* Main Response */}
+                  <Text style={styles.transcribedText}>
+                    {transcribedSpeech ||
+                      "Your transcribed text will be shown here"}
+                  </Text>
+
+                  {/* Follow-Up Questions */}
+                  {followUpQuestions.length > 0 && (
+                    <View style={styles.followUpContainer}>
+                      <Text style={styles.followUpTitle}>
+                        Follow-Up Questions:
+                      </Text>
+                      {followUpQuestions.map((question, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={styles.followUpQuestion}
+                          onPress={() => setTranscribedSpeech(question)} // Allow tapping to set as new input
+                        >
+                          <Text style={styles.followUpText}>{question}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+                </>
               )}
-            </TouchableOpacity>
+            </ScrollView>
+            {/* Play Button */}
             <TouchableOpacity
               style={styles.playButton}
               onPress={playTranscribedText}
               disabled={!transcribedSpeech || isTranscribing}
             >
-              <FontAwesome name="volume-up" size={30} color="white" />
+              <FontAwesome name="volume-up" size={24} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
+
+          {/* Microphone Button */}
+          <TouchableOpacity
+            style={[
+              styles.microphoneButton,
+              (isRecording || isTranscribing) && styles.disabledButton,
+            ]}
+            onPressIn={startRecording}
+            onPressOut={stopRecording}
+            disabled={isRecording || isTranscribing}
+          >
+            {isRecording ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <FontAwesome name="microphone" size={40} color="#FFFFFF" />
+            )}
+          </TouchableOpacity>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  mainScrollContainer: {
-    padding: 20,
-    height: "100%",
-    width: "100%",
+  gradientContainer: {
+    flex: 1,
   },
-  mainInnerContainer: {
-    gap: 75,
-    height: "100%",
-    alignItems: "center",
+  safeArea: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
     justifyContent: "center",
-    flexGrow: 1,
+    alignItems: "center",
+    padding: 20,
   },
-  title: {
-    fontSize: 35,
-    padding: 5,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 20,
+  lottieAnimation: {
+    width: 150,
+    height: 150,
+    marginBottom: 30,
   },
   transcriptionContainer: {
-    backgroundColor: "rgb(220,220,220)",
-    width: "100%",
-    height: 300,
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    width: "90%",
+    height: 200,
+    borderRadius: 20,
     padding: 20,
-    marginBottom: 20,
-    borderRadius: 5,
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "flex-start",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
   transcribedText: {
-    fontSize: 20,
-    padding: 5,
-    color: "#000",
-    textAlign: "left",
-    width: "100%",
-  },
-  microphoneButton: {
-    backgroundColor: "red",
-    width: 75,
-    height: 75,
-    marginTop: 100,
-    borderRadius: 50,
-    alignItems: "center",
-    justifyContent: "center",
+    fontSize: 18,
+    color: "#333",
+    textAlign: "center",
+    fontFamily: "Nunito-Regular",
   },
   playButton: {
-    backgroundColor: "green",
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: "center",
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    backgroundColor: "#6C9BCF",
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     justifyContent: "center",
+    alignItems: "center",
+  },
+  microphoneButton: {
+    backgroundColor: "#FF6B6B",
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 50,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  followUpContainer: {
     marginTop: 20,
+    width: "100%",
+  },
+  followUpTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#6C9BCF",
+    marginBottom: 10,
+  },
+  followUpQuestion: {
+    backgroundColor: "rgba(108, 155, 207, 0.1)",
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  followUpText: {
+    fontSize: 16,
+    color: "#555",
+    textAlign: "left",
+    fontFamily: "Nunito-Regular",
+    marginBottom: 10,
+
   },
 });
