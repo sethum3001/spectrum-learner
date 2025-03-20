@@ -16,11 +16,17 @@ const Evaluation = () => {
     const loadQuizAttempts = async () => {
       try {
         const storedAttempts = await AsyncStorage.getItem('quizAttempts');
+        console.log('Stored attempts from AsyncStorage:', storedAttempts);
+
         if (storedAttempts) {
-          setQuizAttempts(JSON.parse(storedAttempts) as QuizAttempt[]);
+          const parsedAttempts = JSON.parse(storedAttempts) as QuizAttempt[];
+          console.log('Parsed attempts:', parsedAttempts);
+          setQuizAttempts(parsedAttempts);
+        } else {
+          console.log('No quiz attempts found in AsyncStorage');
         }
       } catch (error) {
-        console.error("Error loading quiz attempts:", error);
+        console.error('Error loading quiz attempts:', error);
       }
     };
 
@@ -38,8 +44,8 @@ const Evaluation = () => {
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <View style={styles.attemptItem}>
-              <Text>Date: {item.date}</Text>
-              <Text>Score: {item.score} / {item.total}</Text>
+              <Text style={styles.attemptDate}>Date: {item.date}</Text>
+              <Text style={styles.attemptScore}>Score: {item.score} / {item.total}</Text>
             </View>
           )}
         />
@@ -49,10 +55,12 @@ const Evaluation = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f8f9fa' },
+  container: { flex: 1, padding: 20, backgroundColor: '#f8f9fa', marginTop: 50 },
   header: { fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
   noAttempts: { fontSize: 16, color: 'gray', textAlign: 'center', marginTop: 20 },
-  attemptItem: { padding: 10, backgroundColor: '#e9ecef', marginVertical: 5, borderRadius: 5 }
+  attemptItem: { padding: 10, backgroundColor: '#e9ecef', marginVertical: 5, borderRadius: 5 },
+  attemptDate: { fontSize: 16, fontWeight: 'bold' },
+  attemptScore: { fontSize: 16, color: '#333' },
 });
 
 export default Evaluation;

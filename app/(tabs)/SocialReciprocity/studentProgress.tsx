@@ -119,7 +119,6 @@ export default function StudentProgressScreen() {
       }
 
       const data = await response.json();
-      console.log('Data:', data);
 
       // Check if the response contains the story and questions
       if (data.story && data.questions) {

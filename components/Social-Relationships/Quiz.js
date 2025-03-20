@@ -91,7 +91,7 @@ const SocialQuiz = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState(new Array(questions.length).fill(null));
   const [showResult, setShowResult] = useState(false);
-  
+
 
   const handleAnswer = (selectedAnswer) => {
     const newAnswers = [...answers];
@@ -104,24 +104,37 @@ const SocialQuiz = () => {
       setShowResult(true);
     }
   };
-  
 
-const handleQuizCompletion = async () => {
-  const newAttempt = {
-    date: new Date().toLocaleString(),
-    score: score,
-    total: questions.length,
+
+  const handleQuizCompletion = async () => {
+    // Calculate score before saving
+    const calculatedScore = answers.filter(
+      (answer, index) => answer === questions[index].correctAnswer
+    ).length;
+
+    const newAttempt = {
+      date: new Date().toLocaleString(),
+      score: calculatedScore,
+      total: questions.length,
+    };
+
+    try {
+      // Retrieve existing attempts from AsyncStorage
+      const storedAttempts = await AsyncStorage.getItem('quizAttempts');
+      const attemptsArray = storedAttempts ? JSON.parse(storedAttempts) : [];
+
+      // Add the new attempt to the array
+      attemptsArray.push(newAttempt);
+
+      // Save the updated array back to AsyncStorage
+      await AsyncStorage.setItem('quizAttempts', JSON.stringify(attemptsArray));
+      console.log('Quiz attempt saved successfully:', newAttempt);
+    } catch (error) {
+      console.error('Error saving quiz attempt:', error);
+    }
+
+    setShowResult(true);
   };
-  
-
-  const storedAttempts = await AsyncStorage.getItem('quizAttempts');
-  const attemptsArray = storedAttempts ? JSON.parse(storedAttempts) : [];
-  
-  attemptsArray.push(newAttempt);
-  await AsyncStorage.setItem('quizAttempts', JSON.stringify(attemptsArray));
-
-  setShowResult(true);
-};
 
 
   const restartQuiz = () => {
@@ -140,14 +153,14 @@ const handleQuizCompletion = async () => {
           <Text style={styles.question}>{questions[currentQuestion].question}</Text>
           <View style={styles.options}>
             {questions[currentQuestion].options.map((option, index) => (
-              <TouchableOpacity 
-                key={index} 
-                onPress={() => handleAnswer(option.emotion)} 
+              <TouchableOpacity
+                key={index}
+                onPress={() => handleAnswer(option.emotion)}
                 style={[styles.optionButton,
-                  answers[currentQuestion] === option.emotion && {
-                    backgroundColor: option.emotion === questions[currentQuestion].correctAnswer 
-                      ? '#28a745' : '#dc3545'
-                  }
+                answers[currentQuestion] === option.emotion && {
+                  backgroundColor: option.emotion === questions[currentQuestion].correctAnswer
+                    ? '#28a745' : '#dc3545'
+                }
                 ]}
               >
                 <Image source={{ uri: option.image }} style={styles.optionImage} />
@@ -156,20 +169,21 @@ const handleQuizCompletion = async () => {
             ))}
           </View>
           <Text style={styles.progress}>Question {currentQuestion + 1} of {questions.length}</Text>
-         <TouchableOpacity onPress={() => setShowResult(true)} style={styles.completeButton}>
+          {/* Update the Complete Quiz button to call handleQuizCompletion */}
+          <TouchableOpacity onPress={handleQuizCompletion} style={styles.completeButton}>
             <Text style={styles.completeButtonText}>Complete Quiz</Text>
           </TouchableOpacity>
         </>
       ) : (
         <View style={styles.result}>
           <Text style={styles.title}>Quiz Completed!</Text>
-          <View style={[styles.resultBox, 
-            score >= 6 ? styles.highScore : score >= 4 ? styles.mediumScore : styles.lowScore]}>
+          <View style={[styles.resultBox,
+          score >= 6 ? styles.highScore : score >= 4 ? styles.mediumScore : styles.lowScore]}>
             <Text style={styles.score}>Your score: {score} out of {questions.length}</Text>
           </View>
           {questions.map((question, index) => (
-            <View key={index} style={[styles.questionResult, 
-              answers[index] === question.correctAnswer ? styles.correctBox : styles.incorrectBox]}>
+            <View key={index} style={[styles.questionResult,
+            answers[index] === question.correctAnswer ? styles.correctBox : styles.incorrectBox]}>
               <Text style={styles.questionText}>{question.question}</Text>
               <Text style={answers[index] === question.correctAnswer ? styles.correct : styles.incorrect}>
                 Your answer: {answers[index] || 'Not answered'}
@@ -191,6 +205,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 20,
     backgroundColor: '#f0f4f8',
+    marginTop: 50,
   },
   title: {
     fontSize: 24,
@@ -298,46 +313,46 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 3, // For Android shadow effect
   },
-  
+
   correctBox: {
     backgroundColor: '#d4edda', // Light green background
     borderLeftWidth: 6,
     borderLeftColor: '#28a745', // Green side border for correct answers
   },
-  
+
   incorrectBox: {
     backgroundColor: '#f8d7da', // Light red background
     borderLeftWidth: 6,
     borderLeftColor: '#dc3545', // Red side border for incorrect answers
   },
-  
+
   questionText: {
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 5,
   },
-  
+
   answerText: {
     fontSize: 14,
     marginBottom: 5,
   },
-  
+
   correct: {
     color: '#28a745', // Green for correct answers
     fontWeight: 'bold',
   },
-  
+
   incorrect: {
     color: '#dc3545', // Red for incorrect answers
     fontWeight: 'bold',
   },
-  
+
   correctAnswer: {
     fontSize: 14,
     color: '#555',
     fontStyle: 'italic',
   },
-  
+
   restartButton: {
     backgroundColor: '#007bff',
     padding: 12,
@@ -345,13 +360,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
   },
-  
+
   restartButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  
+
 });
 
 export default SocialQuiz;

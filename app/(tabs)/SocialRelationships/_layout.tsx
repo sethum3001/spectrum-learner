@@ -1,45 +1,57 @@
-import { StyleSheet } from "react-native";
-import React from "react";
+import { Feather } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import { Text } from "react-native";
+
+const getTabOptions = (iconName: "book-open" | "dribbble" | "help-circle", label: string) => ({
+  tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+    <Feather name={iconName} size={size} color={color} />
+  ),
+  tabBarLabel: ({ focused, color }: { focused: boolean; color: string }) =>
+    focused ? <Text style={{ color }}>{label}</Text> : null,
+});
 
 const SocialRepLayout = () => {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false, // Hide the header
+        headerShown: false,
+        tabBarActiveTintColor: "white",
+        tabBarInactiveTintColor: "white",
+        tabBarLabelPosition: "beside-icon",
+        tabBarStyle: {
+          backgroundColor: "#ABC8A2",
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          shadowColor: "black",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.25,
+          shadowRadius: 3.84,
+          elevation: 5,
+        },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: "Learning",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="book-outline" size={size} color={color} />
-          ),
+          ...getTabOptions("book-open", "Learning"),
         }}
       />
       <Tabs.Screen
         name="question"
         options={{
           title: "Game Time",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="game-controller-outline" size={size} color={color} />
-          ),
+          ...getTabOptions("dribbble", "Game Time"),
         }}
       />
       <Tabs.Screen
         name="evaluation"
         options={{
           title: "Evaluate",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="stats-chart-outline" size={size} color={color} />
-          ),
+          ...getTabOptions("help-circle", "Evaluate"),
         }}
       />
-    
-      
-      {/* Add other screens here */}
+
     </Tabs>
   );
 };

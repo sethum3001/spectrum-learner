@@ -84,7 +84,6 @@ export default function SocialReciprocity() {
       }
 
       const data = await response.json();
-      console.log('Data:', data);
 
       // Store data in localStorage/AsyncStorage first
       if (data.story && data.questions) {

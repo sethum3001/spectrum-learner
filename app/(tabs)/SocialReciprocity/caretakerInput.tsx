@@ -69,7 +69,6 @@ export default function caretakerInputScreen() {
             }
 
             const data = await response.json();
-            console.log('API Response:', data);
 
             // Navigate to the student progress screen with the new level
             router.push({
