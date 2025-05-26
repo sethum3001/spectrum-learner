@@ -831,7 +831,7 @@ const ScenarioGenerator = () => {
               <View style={styles.speechTail} />
               <View style={styles.speechBubble}>
                 <Text style={styles.speechText}>
-                  Hi there! 👋 Tell me about something you want to learn, and I'll create amazing pictures to help you understand it better! ✨ You can zoom in on any picture to see more details! 🔍
+                  Hi there! 👋 Tell me about something you want to learn, and I'll teach you how to do it properly! ✨ You can zoom in on any picture to see more details! 🔍
                 </Text>
               </View>
             </View>
@@ -840,7 +840,7 @@ const ScenarioGenerator = () => {
           {loading ? (
             <View style={styles.loaderContainer}>
               <PulseLoader />
-              <Text style={styles.loaderText}>🎨 Creating your magical learning pictures...</Text>
+              <Text style={styles.loaderText}>🎨 Creating your magical learning story...</Text>
               <Text style={[styles.loaderText, { fontSize: 14, marginTop: 10 }]}>
                 This might take a moment! ⏰
               </Text>
@@ -851,7 +851,7 @@ const ScenarioGenerator = () => {
                 <View style={styles.imageHeader}>
                   <MaterialIcons name="photo-library" size={24} color="#ABC8A2" />
                   <Text style={styles.imageHeaderText}>
-                    Your Learning Pictures! 📚 {isSimplified ? '(Detailed View)' : '(Quick View)'}
+                    Follow me buddy! 📚 {isSimplified ? '(Detailed View)' : '(Quick View)'}
                   </Text>
                 </View>
 
