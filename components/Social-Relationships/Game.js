@@ -2,11 +2,22 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView, Image,
   StyleSheet, Dimensions, KeyboardAvoidingView, Platform, ActivityIndicator,
-  Animated, Easing
+  Animated as RNAnimated, Easing, Modal,
+  State
 } from 'react-native';
+import { PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-handler';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated from 'react-native-reanimated';
+import {
+  useSharedValue,
+  useAnimatedStyle,
+  useAnimatedGestureHandler,
+  withSpring,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
 
@@ -211,7 +222,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   imageWrapper: {
-    width: (width - 80) / 2,
     marginBottom: 15,
     borderRadius: 15,
     overflow: 'hidden',
@@ -221,10 +231,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4,
+    position: 'relative',
+  },
+  imageWrapperTwo: {
+    width: (width - 80) / 2,
+    height: 180,
+  },
+  imageWrapperFour: {
+    width: (width - 90) / 2,
+    height: 140,
   },
   scenarioImage: {
     width: '100%',
-    height: 150,
+    height: '100%',
     borderRadius: 15,
   },
   imageOverlay: {
@@ -232,14 +251,24 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     padding: 8,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
   },
   imageNumber: {
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  zoomIcon: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 15,
+    padding: 6,
   },
   loaderContainer: {
     flex: 1,
@@ -273,23 +302,99 @@ const styles = StyleSheet.create({
   floatingIcon: {
     position: 'absolute',
   },
+  zoomModal: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  zoomContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  zoomImage: {
+    width: width * 0.9,
+    height: height * 0.7,
+    borderRadius: 20,
+  },
+  zoomHeader: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    zIndex: 10,
+  },
+  zoomTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  closeButton: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 20,
+    padding: 10,
+  },
+  zoomInstructions: {
+    position: 'absolute',
+    bottom: 100,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  instructionText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    textAlign: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginVertical: 5,
+  },
+  transitionOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(171, 200, 162, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 25,
+  },
+  transitionText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 10,
+  },
 });
 
 const FloatingIcon = ({ icon, color, delay = 0 }) => {
-  const animatedValue = useRef(new Animated.Value(0)).current;
-  const rotateValue = useRef(new Animated.Value(0)).current;
+  const animatedValue = useRef(new RNAnimated.Value(0)).current;
+  const rotateValue = useRef(new RNAnimated.Value(0)).current;
 
   useEffect(() => {
     const startAnimation = () => {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(animatedValue, {
+      RNAnimated.loop(
+        RNAnimated.sequence([
+          RNAnimated.timing(animatedValue, {
             toValue: 1,
             duration: 3000,
             easing: Easing.inOut(Easing.sin),
             useNativeDriver: true,
           }),
-          Animated.timing(animatedValue, {
+          RNAnimated.timing(animatedValue, {
             toValue: 0,
             duration: 3000,
             easing: Easing.inOut(Easing.sin),
@@ -298,8 +403,8 @@ const FloatingIcon = ({ icon, color, delay = 0 }) => {
         ])
       ).start();
 
-      Animated.loop(
-        Animated.timing(rotateValue, {
+      RNAnimated.loop(
+        RNAnimated.timing(rotateValue, {
           toValue: 1,
           duration: 6000,
           easing: Easing.linear,
@@ -322,7 +427,7 @@ const FloatingIcon = ({ icon, color, delay = 0 }) => {
   });
 
   return (
-    <Animated.View
+    <RNAnimated.View
       style={[
         styles.floatingIcon,
         {
@@ -333,23 +438,23 @@ const FloatingIcon = ({ icon, color, delay = 0 }) => {
       ]}
     >
       <Ionicons name={icon} size={24} color={color} />
-    </Animated.View>
+    </RNAnimated.View>
   );
 };
 
 const PulseLoader = () => {
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new RNAnimated.Value(1)).current;
 
   useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
+    RNAnimated.loop(
+      RNAnimated.sequence([
+        RNAnimated.timing(pulseAnim, {
           toValue: 1.2,
           duration: 800,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-        Animated.timing(pulseAnim, {
+        RNAnimated.timing(pulseAnim, {
           toValue: 1,
           duration: 800,
           easing: Easing.inOut(Easing.ease),
@@ -360,9 +465,185 @@ const PulseLoader = () => {
   }, []);
 
   return (
-    <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+    <RNAnimated.View style={{ transform: [{ scale: pulseAnim }] }}>
       <ActivityIndicator size="large" color="#ABC8A2" />
-    </Animated.View>
+    </RNAnimated.View>
+  );
+};
+
+const ZoomableImage = ({ uri, index, isSimplified }) => {
+  const scale = useSharedValue(1);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  const pinchHandler = useAnimatedGestureHandler({
+    onStart: () => {
+      runOnJS(setIsZoomed)(true);
+    },
+    onActive: (event) => {
+      scale.value = Math.max(1, Math.min(event.scale, 3));
+    },
+    onEnd: () => {
+      if (scale.value < 1.2) {
+        scale.value = withSpring(1);
+        translateX.value = withSpring(0);
+        translateY.value = withSpring(0);
+        runOnJS(setIsZoomed)(false);
+      }
+    },
+  });
+
+  const panHandler = useAnimatedGestureHandler({
+    onActive: (event) => {
+      if (scale.value > 1) {
+        translateX.value = event.translationX;
+        translateY.value = event.translationY;
+      }
+    },
+    onEnd: () => {
+      translateX.value = withSpring(0);
+      translateY.value = withSpring(0);
+    },
+  });
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scale: scale.value },
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+      ],
+    };
+  });
+
+  const resetZoom = () => {
+    scale.value = withSpring(1);
+    translateX.value = withSpring(0);
+    translateY.value = withSpring(0);
+    setIsZoomed(false);
+  };
+
+  return (
+    <PanGestureHandler onGestureEvent={panHandler}>
+      <Animated.View>
+        <PinchGestureHandler onGestureEvent={pinchHandler}>
+          <Animated.View style={animatedStyle}>
+            <Image source={{ uri }} style={styles.scenarioImage} resizeMode="cover" />
+          </Animated.View>
+        </PinchGestureHandler>
+        {isZoomed && (
+          <TouchableOpacity
+            style={[styles.closeButton, { position: 'absolute', top: 10, right: 10 }]}
+            onPress={resetZoom}
+          >
+            <Ionicons name="close" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+        )}
+      </Animated.View>
+    </PanGestureHandler>
+  );
+};
+
+const ZoomModal = ({ visible, imageUri, imageIndex, onClose }) => {
+  const scale = useSharedValue(1);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const fadeAnim = useRef(new RNAnimated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible) {
+      RNAnimated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      RNAnimated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible]);
+
+  const pinchHandler = useAnimatedGestureHandler({
+    onActive: (event) => {
+      scale.value = Math.max(0.5, Math.min(event.scale, 4));
+    },
+    onEnd: () => {
+      if (scale.value < 0.8) {
+        scale.value = withSpring(1);
+        translateX.value = withSpring(0);
+        translateY.value = withSpring(0);
+      }
+    },
+  });
+
+  const panHandler = useAnimatedGestureHandler({
+    onActive: (event) => {
+      translateX.value = event.translationX;
+      translateY.value = event.translationY;
+    },
+    onEnd: () => {
+      translateX.value = withSpring(0);
+      translateY.value = withSpring(0);
+    },
+  });
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scale: scale.value },
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+      ],
+    };
+  });
+
+  const resetZoom = () => {
+    scale.value = withSpring(1);
+    translateX.value = withSpring(0);
+    translateY.value = withSpring(0);
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="fade">
+      <RNAnimated.View style={[styles.zoomModal, { opacity: fadeAnim }]}>
+        <View style={styles.zoomHeader}>
+          <Text style={styles.zoomTitle}>Step {imageIndex + 1} 🔍</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Ionicons name="close" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.zoomContainer}>
+          <PanGestureHandler onGestureEvent={panHandler}>
+            <Animated.View>
+              <PinchGestureHandler onGestureEvent={pinchHandler}>
+                <Animated.View style={animatedStyle}>
+                  <Image
+                    source={{ uri: imageUri }}
+                    style={styles.zoomImage}
+                    resizeMode="contain"
+                  />
+                </Animated.View>
+              </PinchGestureHandler>
+            </Animated.View>
+          </PanGestureHandler>
+        </View>
+
+        <View style={styles.zoomInstructions}>
+          <Text style={styles.instructionText}>🤏 Pinch to zoom in/out</Text>
+          <Text style={styles.instructionText}>👆 Drag to move around</Text>
+          <TouchableOpacity onPress={resetZoom}>
+            <Text style={[styles.instructionText, { backgroundColor: '#ABC8A2' }]}>
+              🔄 Reset Zoom
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </RNAnimated.View>
+    </Modal>
   );
 };
 
@@ -370,18 +651,24 @@ const ScenarioGenerator = () => {
   const [input, setInput] = useState('');
   const [scenarioData, setScenarioData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isSimplified, setIsSimplified] = useState(false);
+  const [showTransition, setShowTransition] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [zoomModalVisible, setZoomModalVisible] = useState(false);
   const router = useRouter();
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
+
+  const fadeAnim = useRef(new RNAnimated.Value(0)).current;
+  const slideAnim = useRef(new RNAnimated.Value(50)).current;
+  const transitionAnim = useRef(new RNAnimated.Value(0)).current;
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
+    RNAnimated.parallel([
+      RNAnimated.timing(fadeAnim, {
         toValue: 1,
         duration: 1000,
         useNativeDriver: true,
       }),
-      Animated.timing(slideAnim, {
+      RNAnimated.timing(slideAnim, {
         toValue: 0,
         duration: 800,
         easing: Easing.out(Easing.back(1.1)),
@@ -394,6 +681,7 @@ const ScenarioGenerator = () => {
     if (!input.trim()) return;
 
     setLoading(true);
+    setIsSimplified(false);
     try {
       const response = await fetch(
         'https://social-relationship.up.railway.app/process_scenario?accuracy=0.7&child_id=child_001',
@@ -407,7 +695,14 @@ const ScenarioGenerator = () => {
         }
       );
       const data = await response.json();
-      setScenarioData(data);
+      console.log('API Response:', data);
+      if (data && data.steps && Array.isArray(data.steps)) {
+        const initialSteps = data.steps.slice(0, 2);
+        setScenarioData({ ...data, steps: initialSteps, allSteps: data.steps });
+      } else {
+        console.error('Invalid data structure:', data);
+        alert('Received invalid data from the server. Please try again.');
+      }
     } catch (error) {
       console.error('Error fetching scenario:', error);
       alert('Something went wrong. Please try again!');
@@ -418,6 +713,14 @@ const ScenarioGenerator = () => {
 
   const handleSimplify = async () => {
     setLoading(true);
+    setShowTransition(true);
+
+    RNAnimated.timing(transitionAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+
     try {
       const response = await fetch(
         'https://social-relationship.up.railway.app/visualize_scenario_for_asd',
@@ -428,10 +731,32 @@ const ScenarioGenerator = () => {
         }
       );
       const data = await response.json();
-      setScenarioData({ ...scenarioData, steps: data.steps });
+
+      setTimeout(() => {
+        const simplifiedSteps = data.steps.slice(0, 4);
+        setScenarioData({
+          ...scenarioData,
+          steps: simplifiedSteps,
+          allSteps: data.steps
+        });
+        setIsSimplified(true);
+        setShowTransition(false);
+
+        RNAnimated.timing(transitionAnim, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }).start();
+      }, 1500);
     } catch (error) {
       console.error('Error simplifying scenario:', error);
       alert('Failed to simplify. Please try again!');
+      setShowTransition(false);
+      RNAnimated.timing(transitionAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
     } finally {
       setLoading(false);
     }
@@ -442,6 +767,20 @@ const ScenarioGenerator = () => {
       pathname: '/(tabs)/SocialRelationships/QuizScreen',
       params: { mcqs: JSON.stringify(scenarioData.mcqs), input }
     });
+  };
+
+  const openZoomModal = (imageUri, index) => {
+    setSelectedImage({ uri: imageUri, index });
+    setZoomModalVisible(true);
+  };
+
+  const closeZoomModal = () => {
+    setZoomModalVisible(false);
+    setSelectedImage(null);
+  };
+
+  const getImageWrapperStyle = () => {
+    return isSimplified ? styles.imageWrapperFour : styles.imageWrapperTwo;
   };
 
   return (
@@ -458,7 +797,7 @@ const ScenarioGenerator = () => {
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollViewContainer} keyboardShouldPersistTaps="handled">
-          <Animated.View
+          <RNAnimated.View
             style={[
               styles.headerContainer,
               {
@@ -469,14 +808,14 @@ const ScenarioGenerator = () => {
           >
             <View style={{ position: 'relative' }}>
               <Text style={styles.title}>🌟 Learning Adventure! 🌟</Text>
-              <Animated.View style={styles.magicWand}>
+              <RNAnimated.View style={styles.magicWand}>
                 <MaterialIcons name="auto-fix-high" size={24} color="#FFD7E6" />
-              </Animated.View>
+              </RNAnimated.View>
             </View>
             <Text style={styles.subtitle}>Let's explore together with pictures and fun!</Text>
-          </Animated.View>
+          </RNAnimated.View>
 
-          <Animated.View
+          <RNAnimated.View
             style={[
               styles.characterContainer,
               {
@@ -492,11 +831,11 @@ const ScenarioGenerator = () => {
               <View style={styles.speechTail} />
               <View style={styles.speechBubble}>
                 <Text style={styles.speechText}>
-                  Hi there! 👋 Tell me about something you want to learn, and I'll create amazing pictures to help you understand it better! ✨
+                  Hi there! 👋 Tell me about something you want to learn, and I'll create amazing pictures to help you understand it better! ✨ You can zoom in on any picture to see more details! 🔍
                 </Text>
               </View>
             </View>
-          </Animated.View>
+          </RNAnimated.View>
 
           {loading ? (
             <View style={styles.loaderContainer}>
@@ -507,32 +846,73 @@ const ScenarioGenerator = () => {
               </Text>
             </View>
           ) : scenarioData ? (
-            <Animated.View style={{ opacity: fadeAnim }}>
+            <RNAnimated.View style={{ opacity: fadeAnim, position: 'relative' }}>
               <View style={styles.imageSection}>
                 <View style={styles.imageHeader}>
                   <MaterialIcons name="photo-library" size={24} color="#ABC8A2" />
-                  <Text style={styles.imageHeaderText}>Your Learning Pictures! 📚</Text>
+                  <Text style={styles.imageHeaderText}>
+                    Your Learning Pictures! 📚 {isSimplified ? '(Detailed View)' : '(Quick View)'}
+                  </Text>
                 </View>
+
                 <View style={styles.imageContainer}>
                   {scenarioData.steps.map((url, index) => (
-                    <View key={index} style={styles.imageWrapper}>
+                    <TouchableOpacity
+                      key={index}
+                      style={[styles.imageWrapper, getImageWrapperStyle()]}
+                      onPress={() => openZoomModal(url, index)}
+                      activeOpacity={0.8}
+                    >
                       <Image source={{ uri: url }} style={styles.scenarioImage} />
                       <View style={styles.imageOverlay}>
                         <Text style={styles.imageNumber}>Step {index + 1}</Text>
                       </View>
-                    </View>
+                      <View style={styles.zoomIcon}>
+                        <Ionicons name="search" size={16} color="#4A4A4A" />
+                      </View>
+                    </TouchableOpacity>
                   ))}
+                </View>
+
+                <View style={{ alignItems: 'center', marginTop: 15 }}>
+                  <Text style={{
+                    color: '#6B6B6B',
+                    fontSize: 14,
+                    fontStyle: 'italic',
+                    textAlign: 'center'
+                  }}>
+                    💡 Tap any image to zoom in and explore!
+                    {!isSimplified && ' Use "Make it Easier" for more detailed steps!'}
+                  </Text>
                 </View>
               </View>
 
-              <TouchableOpacity
-                onPress={handleSimplify}
-                style={[styles.actionButton, styles.simplifyButton]}
-                disabled={loading}
-              >
-                <FontAwesome5 name="lightbulb" size={20} color="#4A4A4A" />
-                <Text style={styles.buttonText}>Make it Even Easier! 💡</Text>
-              </TouchableOpacity>
+              {showTransition && (
+                <RNAnimated.View
+                  style={[
+                    styles.transitionOverlay,
+                    {
+                      opacity: transitionAnim,
+                    }
+                  ]}
+                >
+                  <MaterialIcons name="auto-fix-high" size={50} color="#FFFFFF" />
+                  <Text style={styles.transitionText}>
+                    ✨ Creating more detailed steps for you! ✨
+                  </Text>
+                </RNAnimated.View>
+              )}
+
+              {!isSimplified && (
+                <TouchableOpacity
+                  onPress={handleSimplify}
+                  style={[styles.actionButton, styles.simplifyButton]}
+                  disabled={loading}
+                >
+                  <FontAwesome5 name="lightbulb" size={20} color="#4A4A4A" />
+                  <Text style={styles.buttonText}>Make it Even Easier! 💡</Text>
+                </TouchableOpacity>
+              )}
 
               <TouchableOpacity
                 onPress={handleNext}
@@ -543,9 +923,9 @@ const ScenarioGenerator = () => {
                 <Text style={styles.buttonText}>Take the Fun Quiz! 🎯</Text>
                 <Ionicons name="arrow-forward" size={20} color="#4A4A4A" />
               </TouchableOpacity>
-            </Animated.View>
+            </RNAnimated.View>
           ) : (
-            <Animated.View
+            <RNAnimated.View
               style={[
                 styles.inputSection,
                 {
@@ -569,9 +949,16 @@ const ScenarioGenerator = () => {
                   <Ionicons name="send" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
               </View>
-            </Animated.View>
+            </RNAnimated.View>
           )}
         </ScrollView>
+
+        <ZoomModal
+          visible={zoomModalVisible}
+          imageUri={selectedImage?.uri}
+          imageIndex={selectedImage?.index}
+          onClose={closeZoomModal}
+        />
       </LinearGradient>
     </KeyboardAvoidingView>
   );
