@@ -1,10 +1,8 @@
 import React from 'react';
-import StoryGenerator from '../../../components/Social-Relationships/Game'
+import ScenarioGenerator from '../../../components/Social-Relationships/Game';
 
-const GameScreen = () => {
-  return (
-    <StoryGenerator />
-  );
+const SocialRelationships = () => {
+  return <ScenarioGenerator />;
 };
 
-export default GameScreen;
+export default SocialRelationships;
