@@ -91,13 +91,7 @@ export const transcribeSpeech = async (
       };
 
       if (recordingUri && dataUrl) {
-        const rootOrigin =
-          Platform.OS === "android"
-            ? "https://virtual-assistant-spectrum-learn.railway.internal"
-            : Device.isDevice
-            ? "https://virtual-assistant-spectrum-learn.railway.internal"
-            : "localhost";
-        const serverUrl = `http://virtual-assistant-spectrum-learn-production.up.railway.app`;
+        const serverUrl = `https://virtual-assistant-spectrum-learner-production.up.railway.app`;
         console.log("Server URL:", serverUrl);
 
         const serverResponse = await fetch(`${serverUrl}/process-audio`, {

@@ -23,6 +23,7 @@ import { transcribeSpeech } from "./functions/transcribeSpeech";
 // Import your Lottie JSON files
 import micOnAnimation from "./../../../assets/animations/Animation - 1742404403182.json";
 import micOffAnimation from "./../../../assets/animations/Animation - 1742404496205.json";
+import React from "react";
 
 export default function HomeScreen() {
   const [transcribedSpeech, setTranscribedSpeech] = useState("");
