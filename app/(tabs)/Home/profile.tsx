@@ -1,113 +1,291 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+"use client"
 
-const profile = () => {
-  const user = {
-    name: 'John Dorian',
-    location: 'Sri Lanka',
-    avatar: require('../../../assets/images/avatar.png'), 
-  };
+import { useState, useEffect } from "react"
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  Pressable,
+  ActivityIndicator,
+  Animated,
+  Dimensions,
+} from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
+import { Feather } from "@expo/vector-icons"
+import { LinearGradient } from "expo-linear-gradient"
 
-  const activities = {
-    levels: '3',
-    point: '600',
-    rank: 'ndf',
-    time_spent: '5:30',
-  };
+const { width } = Dimensions.get("window")
 
-  const notifications = [
-    { id: 1, name: 'Michaeal Drek', message: 'Kudos your activity!', time: 'just now' },
-    { id: 2, name: 'Jessyka Swann', message: 'Kudos your activity!', time: 'just now' },
-    { id: 3, name: 'Bruno Mars', message: 'Kudos your activity!', time: '2 hours' },
-    { id: 4, name: 'Christopher J.', message: 'Kudos your activity!', time: '7 hours' },
-    { id: 5, name: 'Jin Yang', message: 'Kudos your activity!', time: '2 days' },
-    { id: 6, name: 'Anis Mosal', message: 'Kudos your activity!', time: '3 days' },
-  ];
+interface ChildData {
+  child_id: string
+  difficulty: number
+}
+
+interface ProgressData {
+  _id: string
+  child_id: string
+  question_accuracy: number
+  question_time: number
+  emotional_feedback: {
+    sadness: number
+    happiness: number
+    engagement: number
+  }
+  current_level: number
+}
+
+const Profile = () => {
+  const [childData, setChildData] = useState<ChildData | null>(null)
+  const [progressData, setProgressData] = useState<ProgressData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [fadeAnim] = useState(new Animated.Value(0))
+  const [scaleAnim] = useState(new Animated.Value(0.8))
+
+  // Static user information
+  const staticUser = {
+    name: "Rashi Amarasiri",
+    age: 8,
+    grade: "3rd Grade",
+    avatar: "https://thumbs.dreamstime.com/b/vector-illustration-isolated-white-background-user-profile-avatar-black-line-icon-user-profile-avatar-black-solid-icon-121102166.jpg?w=768",
+    favoriteSubject: "Math & Science",
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  useEffect(() => {
+    if (!loading) {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 50,
+          friction: 7,
+          useNativeDriver: true,
+        }),
+      ]).start()
+    }
+  }, [loading])
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const [childResponse, progressResponse] = await Promise.all([
+        fetch("https://social-relationship.up.railway.app/get_child/child_001"),
+        fetch("https://social-reciprocity-lp-production.up.railway.app/api/get_progress/123"),
+      ])
+
+      if (!childResponse.ok || !progressResponse.ok) {
+        throw new Error("Failed to fetch data")
+      }
+
+      const childResult = await childResponse.json()
+      const progressResult = await progressResponse.json()
+
+      setChildData(childResult)
+      setProgressData(progressResult)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getDifficultyColor = (difficulty: number) => {
+    if (difficulty <= 3) return "#ABC8A2" // Easy - Calming Green
+    if (difficulty <= 6) return "#FFF3D7" // Medium - Warm Yellow
+    return "#FFD7E6" // Hard - Soft Pink
+  }
+
+  const getDifficultyLabel = (difficulty: number) => {
+    if (difficulty <= 3) return "Beginner"
+    if (difficulty <= 6) return "Intermediate"
+    return "Advanced"
+  }
+
+  const getEmotionColor = (emotion: string, value: number) => {
+    const colors = {
+      happiness: "#FFF3D7",
+      engagement: "#D7EFFF",
+      sadness: "#E6D7FF",
+    }
+    return colors[emotion as keyof typeof colors] || "#ABC8A2"
+  }
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <LinearGradient colors={["#ABC8A2", "#E6D7FF", "#FFFFFF"]} style={styles.gradient}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#FFFFFF" />
+            <Text style={styles.loadingText}>Loading your amazing profile! 🌟</Text>
+            <View style={styles.loadingDots}>
+              <Text style={styles.dot}>🎈</Text>
+              <Text style={styles.dot}>🎨</Text>
+              <Text style={styles.dot}>🌈</Text>
+            </View>
+          </View>
+        </LinearGradient>
+      </SafeAreaView>
+    )
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <LinearGradient colors={["#FFD7E6", "#FFFFFF"]} style={styles.gradient}>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorEmoji}>😔</Text>
+            <Text style={styles.errorTitle}>Oops! Something went wrong</Text>
+            <Text style={styles.errorMessage}>{error}</Text>
+            <Pressable style={styles.retryButton} onPress={fetchData}>
+              <Text style={styles.retryButtonText}>Try Again 🔄</Text>
+            </Pressable>
+          </View>
+        </LinearGradient>
+      </SafeAreaView>
+    )
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <LinearGradient colors={['#ABC8A2', '#FFFFFF']} style={styles.gradient}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.header}>
-            <Pressable onPress={() => console.log('Navigate back')} >
-              <Feather name="arrow-left" size={24} color="#FFFFFF" />
-            </Pressable>
-            <Text style={styles.headerTitle}>Profile</Text>
-            <Feather name="settings" size={24} color="#FFFFFF" />
-          </View>
-
-          <View style={styles.profileSection}>
-            <Image source={user.avatar} style={styles.avatar} />
-            <Text style={styles.userName}>{user.name}</Text>
-            <Text style={styles.userLocation}>{user.location}</Text>
-          </View>
-
-          <View style={styles.statsSection}>
-            <Text style={styles.sectionTitle}>Activities (Last 7 days)</Text>
-            <View style={styles.statsContainer}>
-              <View style={styles.statItem}>
-                <Feather name="map-pin" size={24} color="#4CAF50" />
-                <Text style={styles.statValue}>{activities.levels}</Text>
-                <Text style={styles.statLabel}>levels</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Feather name="trending-up" size={24} color="#4CAF50" />
-                <Text style={styles.statValue}>{activities.point}</Text>
-                <Text style={styles.statLabel}>Points</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Feather name="zap" size={24} color="#4CAF50" />
-                <Text style={styles.statValue}>{activities.rank}</Text>
-                <Text style={styles.statLabel}>Rank</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Feather name="clock" size={24} color="#4CAF50" />
-                <Text style={styles.statValue}>{activities.time_spent}</Text>
-                <Text style={styles.statLabel}>Time Spent</Text>
-              </View>
+      <LinearGradient colors={["#ABC8A2", "#E6D7FF", "#D7EFFF", "#FFFFFF"]} style={styles.gradient}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.headerTitle}>My Learning Profile 🌟</Text>
+              <Feather name="star" size={24} color="#FFF3D7" />
             </View>
-          </View>
 
-          <View style={styles.routeSection}>
-            <Text style={styles.sectionTitle}>Levels Gained/Lost</Text>
-            <Text style={styles.routeText}>You used in last 7 days</Text>
-            <Image
-              source={require('../../../assets/images/avatar.png')} 
-              style={styles.mapImage}
-            />
-            <Pressable onPress={() => console.log('View all routes')}>
-              <Text style={styles.routeLink}>7 days →</Text>
-            </Pressable>
-          </View>
-
-          <View style={styles.notificationsSection}>
-            <Text style={styles.sectionTitle}>Notifications</Text>
-            <View style={styles.notificationsTabs}>
-              <Text style={styles.tabActive}>Kudos</Text>
-              <Text style={styles.tabInactive}>Comments</Text>
+            {/* Profile Section */}
+            <View style={styles.profileCard}>
+              <LinearGradient colors={["#FFFFFF", "#FFF3D7"]} style={styles.profileGradient}>
+                <Image source={{ uri: staticUser.avatar }} style={styles.avatar} />
+                <Text style={styles.userName}>{staticUser.name}</Text>
+                <Text style={styles.userDetails}>
+                  Age: {staticUser.age} • {staticUser.grade}
+                </Text>
+                <Text style={styles.favoriteSubject}>💖 Loves: {staticUser.favoriteSubject}</Text>
+              </LinearGradient>
             </View>
-            {notifications.map((notification) => (
-              <View key={notification.id} style={styles.notificationItem}>
-                <Image
-                  source={require('../../../assets/images/avatar.png')} 
-                  style={styles.notificationAvatar}
-                />
-                <View style={styles.notificationText}>
-                  <Text style={styles.notificationName}>{notification.name}</Text>
-                  <Text style={styles.notificationMessage}>{notification.message}</Text>
+
+            {/* Learning Stats */}
+            <View style={styles.statsSection}>
+              <Text style={styles.sectionTitle}>🎯 Learning Progress</Text>
+              <View style={styles.statsGrid}>
+                {/* Difficulty Level */}
+                <View style={[styles.statCard, { backgroundColor: getDifficultyColor(childData?.difficulty || 0) }]}>
+                  <Text style={styles.statEmoji}>🎮</Text>
+                  <Text style={styles.statValue}>{childData?.difficulty || 0}</Text>
+                  <Text style={styles.statLabel}>Difficulty Level</Text>
+                  <Text style={styles.statSubLabel}>{getDifficultyLabel(childData?.difficulty || 0)}</Text>
                 </View>
-                <Text style={styles.notificationTime}>{notification.time}</Text>
+
+                {/* Current Level */}
+                <View style={[styles.statCard, { backgroundColor: "#D7EFFF" }]}>
+                  <Text style={styles.statEmoji}>🏆</Text>
+                  <Text style={styles.statValue}>{progressData?.current_level || 0}</Text>
+                  <Text style={styles.statLabel}>Social Level</Text>
+                  <Text style={styles.statSubLabel}>Keep growing!</Text>
+                </View>
+
+                {/* Accuracy */}
+                <View style={[styles.statCard, { backgroundColor: "#E6D7FF" }]}>
+                  <Text style={styles.statEmoji}>🎯</Text>
+                  <Text style={styles.statValue}>{progressData?.question_accuracy?.toFixed(0) || 0}%</Text>
+                  <Text style={styles.statLabel}>Accuracy</Text>
+                  <Text style={styles.statSubLabel}>Amazing!</Text>
+                </View>
+
+                {/* Response Time */}
+                <View style={[styles.statCard, { backgroundColor: "#FFD7E6" }]}>
+                  <Text style={styles.statEmoji}>⚡</Text>
+                  <Text style={styles.statValue}>{progressData?.question_time?.toFixed(0) || 0}%</Text>
+                  <Text style={styles.statLabel}>Avg. Time Spent%</Text>
+                  <Text style={styles.statSubLabel}>Lightning fast!</Text>
+                </View>
               </View>
-            ))}
-          </View>
+            </View>
+
+            {/* Emotional Feedback */}
+            <View style={styles.emotionSection}>
+              <Text style={styles.sectionTitle}>😊 How You're Feeling</Text>
+              <View style={styles.emotionContainer}>
+                {progressData?.emotional_feedback &&
+                  Object.entries(progressData.emotional_feedback).map(([emotion, value]) => (
+                    <View
+                      key={emotion}
+                      style={[styles.emotionCard, { backgroundColor: getEmotionColor(emotion, value) }]}
+                    >
+                      <Text style={styles.emotionEmoji}>
+                        {emotion === "happiness" ? "😄" : emotion === "engagement" ? "🤩" : "😢"}
+                      </Text>
+                      <Text style={styles.emotionValue}>{value.toFixed(0)}%</Text>
+                      <Text style={styles.emotionLabel}>{emotion.charAt(0).toUpperCase() + emotion.slice(1)}</Text>
+                      <View style={styles.progressBar}>
+                        <View style={[styles.progressFill, { width: `${value}%` }]} />
+                      </View>
+                    </View>
+                  ))}
+              </View>
+            </View>
+
+            {/* Achievement Badges */}
+            <View style={styles.achievementSection}>
+              <Text style={styles.sectionTitle}>🏅 Your Achievements</Text>
+              <View style={styles.badgeContainer}>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeEmoji}>🌟</Text>
+                  <Text style={styles.badgeText}>Star Learner</Text>
+                </View>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeEmoji}>🚀</Text>
+                  <Text style={styles.badgeText}>Quick Thinker</Text>
+                </View>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeEmoji}>💎</Text>
+                  <Text style={styles.badgeText}>Accuracy Master</Text>
+                </View>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeEmoji}>🎨</Text>
+                  <Text style={styles.badgeText}>Creative Mind</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Fun Facts */}
+            <View style={styles.funFactsSection}>
+              <Text style={styles.sectionTitle}>🎉 Fun Learning Facts</Text>
+              <View style={styles.funFactCard}>
+                <Text style={styles.funFactText}>
+                  🎯 You've answered questions with {progressData?.question_accuracy?.toFixed(0)}% accuracy!
+                </Text>
+                <Text style={styles.funFactText}>
+                  ⚡ Your average thinking time is {progressData?.question_time?.toFixed(0)} seconds!
+                </Text>
+                <Text style={styles.funFactText}>
+                  🏆 You're currently at level {progressData?.current_level} in social skills!
+                </Text>
+                <Text style={styles.funFactText}>🌈 Keep up the amazing work, {staticUser.name}!</Text>
+              </View>
+            </View>
+          </Animated.View>
         </ScrollView>
       </LinearGradient>
     </SafeAreaView>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -117,129 +295,270 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    padding: 16,
+    paddingBottom: 100,
+  },
+  content: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  loadingText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    marginTop: 20,
+    textAlign: "center",
+  },
+  loadingDots: {
+    flexDirection: "row",
+    marginTop: 20,
+  },
+  dot: {
+    fontSize: 24,
+    marginHorizontal: 10,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  errorEmoji: {
+    fontSize: 64,
     marginBottom: 20,
+  },
+  errorTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#333333",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  errorMessage: {
+    fontSize: 16,
+    color: "#666666",
+    textAlign: "center",
+    marginBottom: 30,
+  },
+  retryButton: {
+    backgroundColor: "#ABC8A2",
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+    borderRadius: 25,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  retryButtonText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+    paddingHorizontal: 10,
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    textShadowColor: "rgba(0, 0, 0, 0.3)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
-  profileSection: {
-    alignItems: 'center',
+  profileCard: {
     marginBottom: 20,
+    borderRadius: 20,
+    overflow: "hidden",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  profileGradient: {
+    padding: 20,
+    alignItems: "center",
   },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: 15,
+    borderWidth: 4,
+    borderColor: "#FFFFFF",
   },
   userName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333333',
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#333333",
+    marginBottom: 5,
   },
-  userLocation: {
+  userDetails: {
     fontSize: 16,
-    color: '#666666',
+    color: "#666666",
+    marginBottom: 5,
+  },
+  favoriteSubject: {
+    fontSize: 14,
+    color: "#888888",
+    fontStyle: "italic",
   },
   statsSection: {
     marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333333",
+    marginBottom: 15,
+    paddingHorizontal: 10,
+  },
+  statsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  statCard: {
+    width: (width - 48) / 2,
+    padding: 15,
+    borderRadius: 15,
+    alignItems: "center",
     marginBottom: 10,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statItem: {
-    alignItems: 'center',
+  statEmoji: {
+    fontSize: 24,
+    marginBottom: 8,
   },
   statValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#333333",
+    marginBottom: 5,
   },
   statLabel: {
     fontSize: 14,
-    color: '#666666',
+    fontWeight: "600",
+    color: "#555555",
+    textAlign: "center",
   },
-  routeSection: {
-    marginBottom: 20,
-  },
-  routeText: {
-    fontSize: 14,
-    color: '#666666',
-    marginBottom: 10,
-  },
-  mapImage: {
-    width: '100%',
-    height: 150,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  routeLink: {
-    fontSize: 14,
-    color: '#4CAF50',
-    textDecorationLine: 'underline',
-  },
-  notificationsSection: {
-    marginBottom: 20,
-  },
-  notificationsTabs: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 10,
-  },
-  tabActive: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#4CAF50',
-  },
-  tabInactive: {
-    fontSize: 16,
-    color: '#666666',
-  },
-  notificationItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F0F2F5',
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  notificationAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
-  },
-  notificationText: {
-    flex: 1,
-  },
-  notificationName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  notificationMessage: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  notificationTime: {
+  statSubLabel: {
     fontSize: 12,
-    color: '#666666',
+    color: "#777777",
+    fontStyle: "italic",
+    marginTop: 2,
   },
-});
+  emotionSection: {
+    marginBottom: 20,
+  },
+  emotionContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  emotionCard: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    marginHorizontal: 3,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+  },
+  emotionEmoji: {
+    fontSize: 20,
+    marginBottom: 5,
+  },
+  emotionValue: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333333",
+  },
+  emotionLabel: {
+    fontSize: 10,
+    color: "#555555",
+    textAlign: "center",
+    marginBottom: 5,
+  },
+  progressBar: {
+    width: "100%",
+    height: 4,
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    borderRadius: 2,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: "#333333",
+    borderRadius: 2,
+  },
+  achievementSection: {
+    marginBottom: 20,
+  },
+  badgeContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  badge: {
+    width: (width - 48) / 2,
+    backgroundColor: "#FFFFFF",
+    padding: 15,
+    borderRadius: 12,
+    alignItems: "center",
+    marginBottom: 10,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+  },
+  badgeEmoji: {
+    fontSize: 28,
+    marginBottom: 8,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#333333",
+    textAlign: "center",
+  },
+  funFactsSection: {
+    marginBottom: 20,
+  },
+  funFactCard: {
+    backgroundColor: "#FFFFFF",
+    padding: 20,
+    borderRadius: 15,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  funFactText: {
+    fontSize: 14,
+    color: "#333333",
+    marginBottom: 10,
+    lineHeight: 20,
+  },
+})
 
-export default profile;
+export default Profile

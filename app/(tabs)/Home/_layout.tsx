@@ -1,6 +1,6 @@
-import { Feather } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
-import { Text } from "react-native";
+import { Feather } from "@expo/vector-icons"
+import { Tabs } from "expo-router"
+import { Text } from "react-native"
 
 const getTabOptions = (iconName: "home" | "user" | "help-circle", label: string) => ({
   tabBarIcon: ({ color, size }: { color: string; size: number }) => (
@@ -8,7 +8,7 @@ const getTabOptions = (iconName: "home" | "user" | "help-circle", label: string)
   ),
   tabBarLabel: ({ focused, color }: { focused: boolean; color: string }) =>
     focused ? <Text style={{ color }}>{label}</Text> : null,
-});
+})
 
 const TabsLayout = () => {
   return (
@@ -17,7 +17,7 @@ const TabsLayout = () => {
         headerShown: false,
         tabBarActiveTintColor: "white",
         tabBarInactiveTintColor: "white",
-        tabBarLabelPosition: "beside-icon", 
+        tabBarLabelPosition: "beside-icon",
         tabBarStyle: {
           backgroundColor: "#ABC8A2",
           borderTopLeftRadius: 20,
@@ -52,7 +52,7 @@ const TabsLayout = () => {
         }}
       />
     </Tabs>
-  );
-};
+  )
+}
 
-export default TabsLayout;
+export default TabsLayout
