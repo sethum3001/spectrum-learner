@@ -1,45 +1,77 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, Image, Animated } from "react-native"
-import { useRouter } from "expo-router"
-import { Ionicons } from "@expo/vector-icons"
-import { LinearGradient } from "expo-linear-gradient"
+import { useState, useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  SafeAreaView,
+  Image,
+  Animated,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function WordJumble() {
-  const router = useRouter()
-  const bounceAnim = useRef(new Animated.Value(0)).current
+  const router = useRouter();
+  const bounceAnim = useRef(new Animated.Value(0)).current;
 
-  const words = [
-    "Story",
-    "Theme",
-    "Character",
-    "Fantasy",
-    "Plot",
-    "Setting",
-    "Conflict",
-    "Resolution",
-    "Protagonist",
-    "Antagonist",
-    "Dialogue",
-    "Narrative",
-    "Genre",
-    "Climax",
-    "Foreshadowing",
-    "Symbolism",
-    "Metaphor",
-    "Irony",
-    "Suspense",
-    "Mystery",
-    "Adventure",
-  ]
+  // Categorized words for story generation
+  const categorizedWords = {
+    themes: [
+      "Fantasy",
+      "Mystery",
+      "Adventure",
+      "Magic",
+      "Friendship",
+      "Discovery",
+      "Quest",
+      "Wonder",
+      "Enchantment",
+      "Journey",
+    ],
+    characters: [
+      "Curious squirrel",
+      "Wise owl",
+      "Brave rabbit",
+      "Clever fox",
+      "Kind bear",
+      "Playful dragon",
+      "Magical fairy",
+      "Noble knight",
+      "Talking tree",
+      "Flying unicorn",
+    ],
+    settings: [
+      "Magical forest",
+      "Ancient woodland",
+      "Mystical garden",
+      "Enchanted castle",
+      "Secret meadow",
+      "Crystal cave",
+      "Floating island",
+      "Hidden valley",
+      "Starlit grove",
+      "Rainbow bridge",
+    ],
+  };
 
-  const [jumbledWords, setJumbledWords] = useState([])
-  const [selectedWords, setSelectedWords] = useState([])
-  const [gameCompleted, setGameCompleted] = useState(false)
+  // Flatten all words for display
+  const allWords = [
+    ...categorizedWords.themes,
+    ...categorizedWords.characters,
+    ...categorizedWords.settings,
+  ];
+
+  const [jumbledWords, setJumbledWords] = useState([]);
+  const [selectedWords, setSelectedWords] = useState([]);
+  const [gameCompleted, setGameCompleted] = useState(false);
 
   useEffect(() => {
-    setJumbledWords(shuffleArray([...words]))
+    setJumbledWords(shuffleArray([...allWords]));
 
     // Start the bounce animation
     Animated.loop(
@@ -54,34 +86,88 @@ export default function WordJumble() {
           duration: 1000,
           useNativeDriver: true,
         }),
-      ]),
-    ).start()
-  }, [])
+      ])
+    ).start();
+  }, []);
 
   const shuffleArray = (array) => {
     for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[array[i], array[j]] = [array[j], array[i]]
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
     }
-    return array
-  }
+    return array;
+  };
 
   const toggleWordSelection = (word) => {
-    setSelectedWords((prev) => (prev.includes(word) ? prev.filter((w) => w !== word) : [...prev, word]))
-  }
+    setSelectedWords((prev) =>
+      prev.includes(word) ? prev.filter((w) => w !== word) : [...prev, word]
+    );
+  };
+
+  // Function to categorize selected words
+  const categorizeSelectedWords = () => {
+    const selectedThemes = selectedWords.filter((word) =>
+      categorizedWords.themes.includes(word)
+    );
+    const selectedCharacters = selectedWords.filter((word) =>
+      categorizedWords.characters.includes(word)
+    );
+    const selectedSettings = selectedWords.filter((word) =>
+      categorizedWords.settings.includes(word)
+    );
+
+    return {
+      themes: selectedThemes.length > 0 ? selectedThemes : ["magical forest"], // fallback
+      characters:
+        selectedCharacters.length > 0
+          ? selectedCharacters
+          : ["a curious squirrel and a wise owl"], // fallback
+      settings:
+        selectedSettings.length > 0 ? selectedSettings : ["ancient woodland"], // fallback
+    };
+  };
+
+  // Function to get word category for display
+  const getWordCategory = (word) => {
+    if (categorizedWords.themes.includes(word)) return "theme";
+    if (categorizedWords.characters.includes(word)) return "character";
+    if (categorizedWords.settings.includes(word)) return "setting";
+    return "";
+  };
 
   const handleContinue = () => {
-    setGameCompleted(true)
-  }
+    setGameCompleted(true);
+  };
 
   const handleFinish = () => {
-    router.push("/(tabs)/RepetitiveBehavior/game")
-  }
+    const categorizedSelections = categorizeSelectedWords();
+
+    console.log("🎭 NAVIGATION - Passing selected words to GameScreen:");
+    console.log("📍 Themes:", categorizedSelections.themes);
+    console.log("👥 Characters:", categorizedSelections.characters);
+    console.log("🏞️ Settings:", categorizedSelections.settings);
+
+    // Navigate to game with selected story parameters
+    router.push({
+      pathname: "/(tabs)/RepetitiveBehavior/game",
+      params: {
+        selectedThemes: JSON.stringify(categorizedSelections.themes),
+        selectedCharacters: JSON.stringify(categorizedSelections.characters),
+        selectedSettings: JSON.stringify(categorizedSelections.settings),
+      },
+    });
+  };
 
   return (
     <LinearGradient colors={["#FFFFFF", "#E6F4FF"]} style={styles.container}>
-      <Image source={require("../../assets/images/cloud1.png")} style={styles.cloud1} />
-      <Image source={require("../../assets/images/cloud2.png")} style={styles.cloud2} />
+      <Image
+        source={require("../../assets/images/cloud1.png")}
+        style={styles.cloud1}
+      />
+      <Image
+        source={require("../../assets/images/cloud2.png")}
+        style={styles.cloud2}
+      />
 
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -92,37 +178,70 @@ export default function WordJumble() {
 
           {!gameCompleted ? (
             <View style={styles.content}>
-              <Text style={styles.description}>Where do you want to go next ?</Text>
+              <Text style={styles.description}>
+                Choose themes, characters, and settings for your story!
+              </Text>
 
               <View style={styles.wordGrid}>
-                {jumbledWords.map((word, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={[styles.wordButton, selectedWords.includes(word) && styles.selectedWordButton]}
-                    onPress={() => toggleWordSelection(word)}
-                  >
-                    <Text
-                      style={[styles.wordButtonText, selectedWords.includes(word) && styles.selectedWordButtonText]}
+                {jumbledWords.map((word, index) => {
+                  const category = getWordCategory(word);
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      style={[
+                        styles.wordButton,
+                        selectedWords.includes(word) &&
+                          styles.selectedWordButton,
+                        category === "theme" && styles.themeButton,
+                        category === "character" && styles.characterButton,
+                        category === "setting" && styles.settingButton,
+                      ]}
+                      onPress={() => toggleWordSelection(word)}
                     >
-                      {word}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                      <Text
+                        style={[
+                          styles.wordButtonText,
+                          selectedWords.includes(word) &&
+                            styles.selectedWordButtonText,
+                        ]}
+                      >
+                        {word}
+                      </Text>
+                      <Text style={styles.categoryLabel}>
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
 
               <View style={styles.selectedWordsContainer}>
                 <Text style={styles.selectedWordsTitle}>Your Collection:</Text>
                 <View style={styles.selectedWordsList}>
-                  {selectedWords.map((word, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={styles.selectedWordChip}
-                      onPress={() => toggleWordSelection(word)}
-                    >
-                      <Text style={styles.selectedWordChipText}>{word}</Text>
-                      <Ionicons name="close-circle" size={16} color="#1E88E5" style={styles.chipIcon} />
-                    </TouchableOpacity>
-                  ))}
+                  {selectedWords.map((word, index) => {
+                    const category = getWordCategory(word);
+                    return (
+                      <TouchableOpacity
+                        key={index}
+                        style={[
+                          styles.selectedWordChip,
+                          category === "theme" && styles.themeChip,
+                          category === "character" && styles.characterChip,
+                          category === "setting" && styles.settingChip,
+                        ]}
+                        onPress={() => toggleWordSelection(word)}
+                      >
+                        <Text style={styles.selectedWordChipText}>{word}</Text>
+                        <Text style={styles.chipCategoryLabel}>{category}</Text>
+                        <Ionicons
+                          name="close-circle"
+                          size={16}
+                          color="#1E88E5"
+                          style={styles.chipIcon}
+                        />
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
 
@@ -142,7 +261,10 @@ export default function WordJumble() {
                 ]}
               >
                 <TouchableOpacity
-                  style={[styles.continueButton, selectedWords.length === 0 && styles.disabledButton]}
+                  style={[
+                    styles.continueButton,
+                    selectedWords.length === 0 && styles.disabledButton,
+                  ]}
                   onPress={handleContinue}
                   disabled={selectedWords.length === 0}
                 >
@@ -152,7 +274,9 @@ export default function WordJumble() {
             </View>
           ) : (
             <View style={styles.content}>
-              <Text style={styles.completionText}>Great job! You selected:</Text>
+              <Text style={styles.completionText}>
+                Great job! You selected:
+              </Text>
               <View style={styles.completionWordsList}>
                 {selectedWords.map((word, index) => (
                   <View key={index} style={styles.completionWordChip}>
@@ -176,7 +300,10 @@ export default function WordJumble() {
                   },
                 ]}
               >
-                <TouchableOpacity style={styles.finishButtonLarge} onPress={handleFinish}>
+                <TouchableOpacity
+                  style={styles.finishButtonLarge}
+                  onPress={handleFinish}
+                >
                   <Text style={styles.finishButtonText}>Let's Go!</Text>
                 </TouchableOpacity>
               </Animated.View>
@@ -185,7 +312,10 @@ export default function WordJumble() {
         </ScrollView>
 
         {!gameCompleted && (
-          <TouchableOpacity style={styles.finishButtonFloat} onPress={handleFinish}>
+          <TouchableOpacity
+            style={styles.finishButtonFloat}
+            onPress={handleFinish}
+          >
             <Ionicons name="checkmark-circle" size={32} color="#fff" />
           </TouchableOpacity>
         )}
@@ -193,7 +323,7 @@ export default function WordJumble() {
 
       {/* <Image source={require("../../assets/images/grass.png")} style={styles.grass} /> */}
     </LinearGradient>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -338,6 +468,49 @@ const styles = StyleSheet.create({
   chipIcon: {
     marginLeft: 2,
   },
+  // Category-specific button styles
+  themeButton: {
+    borderColor: "#FF6B6B",
+    borderWidth: 2,
+  },
+  characterButton: {
+    borderColor: "#4ECDC4",
+    borderWidth: 2,
+  },
+  settingButton: {
+    borderColor: "#45B7D1",
+    borderWidth: 2,
+  },
+  categoryLabel: {
+    fontSize: 10,
+    color: "#666",
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    marginTop: 2,
+  },
+  // Category-specific chip styles
+  themeChip: {
+    backgroundColor: "#FFE5E5",
+    borderColor: "#FF6B6B",
+    borderWidth: 1,
+  },
+  characterChip: {
+    backgroundColor: "#E5F9F6",
+    borderColor: "#4ECDC4",
+    borderWidth: 1,
+  },
+  settingChip: {
+    backgroundColor: "#E5F4FF",
+    borderColor: "#45B7D1",
+    borderWidth: 1,
+  },
+  chipCategoryLabel: {
+    fontSize: 8,
+    color: "#999",
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    marginLeft: 5,
+  },
   buttonContainer: {
     marginTop: 15,
   },
@@ -424,5 +597,4 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
-})
-
+});
