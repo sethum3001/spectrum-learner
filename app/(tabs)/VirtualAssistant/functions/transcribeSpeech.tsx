@@ -2,7 +2,6 @@ import { Audio } from "expo-av";
 import { MutableRefObject } from "react";
 import * as FileSystem from "expo-file-system";
 import { Platform } from "react-native";
-import * as Device from "expo-device";
 import { readBlobAsBase64 } from "./readBlobAsBase64";
 
 export const transcribeSpeech = async (
@@ -91,13 +90,7 @@ export const transcribeSpeech = async (
       };
 
       if (recordingUri && dataUrl) {
-        const rootOrigin =
-          Platform.OS === "android"
-            ? "https://virtual-assistant-spectrum-learn.railway.internal"
-            : Device.isDevice
-            ? "https://virtual-assistant-spectrum-learn.railway.internal"
-            : "localhost";
-        const serverUrl = `http://virtual-assistant-spectrum-learn-production.up.railway.app`;
+        const serverUrl = `https://virtual-assistant-spectrum-learner-production.up.railway.app`;
         console.log("Server URL:", serverUrl);
 
         const serverResponse = await fetch(`${serverUrl}/process-audio`, {

@@ -23,6 +23,7 @@ import { transcribeSpeech } from "./functions/transcribeSpeech";
 // Import your Lottie JSON files
 import micOnAnimation from "./../../../assets/animations/Animation - 1742404403182.json";
 import micOffAnimation from "./../../../assets/animations/Animation - 1742404496205.json";
+import React from "react";
 
 export default function HomeScreen() {
   const [transcribedSpeech, setTranscribedSpeech] = useState("");
@@ -32,6 +33,7 @@ export default function HomeScreen() {
   const audioRecordingRef = useRef(new Audio.Recording());
   const webAudioPermissionsRef = useRef<MediaStream | null>(null);
   const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
+  const [isProcessingQuestion, setIsProcessingQuestion] = useState(false);
 
   const playTranscribedText = () => {
     if (transcribedSpeech) {
@@ -95,6 +97,29 @@ export default function HomeScreen() {
     }
   };
 
+  const handleFollowUpQuestionClick = async (question: string) => {
+    setIsProcessingQuestion(true);
+    try {
+      const serverUrl = `https://virtual-assistant-spectrum-learner-production.up.railway.app`;
+      const response = await fetch(`${serverUrl}/process-text`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: question }),
+      });
+
+      const data = await response.json();
+      console.log(data);
+      setTranscribedSpeech(data.main_response);
+      setFollowUpQuestions(data.follow_up_questions || []);
+    } catch (error) {
+      console.error("Error processing follow-up question:", error);
+    } finally {
+      setIsProcessingQuestion(false);
+    }
+  };
+
   return (
     <LinearGradient
       colors={["#FFFFFF", "#90EE90"]}
@@ -129,15 +154,19 @@ export default function HomeScreen() {
                       <Text style={styles.followUpTitle}>
                         Follow-Up Questions:
                       </Text>
-                      {followUpQuestions.map((question, index) => (
-                        <TouchableOpacity
-                          key={index}
-                          style={styles.followUpQuestion}
-                          onPress={() => setTranscribedSpeech(question)} // Allow tapping to set as new input
-                        >
-                          <Text style={styles.followUpText}>{question}</Text>
-                        </TouchableOpacity>
-                      ))}
+                      <TouchableOpacity
+                        style={styles.followUpQuestion}
+                        onPress={() =>
+                          handleFollowUpQuestionClick(followUpQuestions[0])
+                        }
+                        disabled={isProcessingQuestion}
+                      >
+                        <Text style={styles.followUpText}>
+                          {isProcessingQuestion
+                            ? "Processing..."
+                            : followUpQuestions[0]}
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                   )}
                 </>
@@ -264,6 +293,5 @@ const styles = StyleSheet.create({
     textAlign: "left",
     fontFamily: "Nunito-Regular",
     marginBottom: 10,
-
   },
 });
