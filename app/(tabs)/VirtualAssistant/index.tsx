@@ -145,7 +145,7 @@ export default function HomeScreen() {
                   {/* Main Response */}
                   <Text style={styles.transcribedText}>
                     {transcribedSpeech ||
-                      "Your transcribed text will be shown here"}
+                      "Tap the microphone and tell me how you feel."}
                   </Text>
 
                   {/* Follow-Up Questions */}
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   transcriptionContainer: {
     backgroundColor: "rgba(255, 255, 255, 0.8)",
     width: "90%",
-    height: 200,
+    height: 300,
     borderRadius: 20,
     padding: 20,
     justifyContent: "center",
@@ -238,10 +238,14 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   transcribedText: {
-    fontSize: 18,
-    color: "#333",
+    fontSize: 20, // Slightly larger for readability
+    color: "#2E2E2E", // Softer dark gray
     textAlign: "center",
     fontFamily: "Nunito-Regular",
+    paddingHorizontal: 16, // Better spacing on smaller screens
+    paddingVertical: 12,
+    borderRadius: 12, // Rounded edges for friendly feel
+    marginTop: 12,
   },
   playButton: {
     position: "absolute",
