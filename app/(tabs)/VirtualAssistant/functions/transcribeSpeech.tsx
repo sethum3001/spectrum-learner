@@ -2,7 +2,6 @@ import { Audio } from "expo-av";
 import { MutableRefObject } from "react";
 import * as FileSystem from "expo-file-system";
 import { Platform } from "react-native";
-import * as Device from "expo-device";
 import { readBlobAsBase64 } from "./readBlobAsBase64";
 
 export const transcribeSpeech = async (
